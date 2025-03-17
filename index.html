@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>EUROGPT – Lernkarteikarten & Chat</title>
+    <title>EUROGPT – Lernkarteikarten, Chat & DALL·E</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/tesseract.js/4.0.2/tesseract.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.min.js"></script>
     <style>
@@ -44,13 +44,13 @@
         button:hover {
             background: #28a428;
         }
-        .cards, .chat {
+        .chat {
             margin-top: 20px;
             text-align: left;
             background: rgba(255, 255, 255, 0.1);
             padding: 10px;
             border-radius: 8px;
-            max-height: 300px;
+            max-height: 400px;
             overflow-y: auto;
         }
         .message {
@@ -68,17 +68,29 @@
             color: white;
             text-align: left;
         }
+        img {
+            max-width: 100%;
+            border-radius: 8px;
+            margin-top: 10px;
+        }
     </style>
 </head>
 <body>
-    <div class="logo">EUROGPT – Lernkarteikarten & Chat</div>
+    <div class="logo">EUROGPT – Lernkarteikarten, Chat & DALL·E</div>
+
     <input type="file" accept="image/*" id="imageUpload">
     <button onclick="processImage()">📸 Bild hochladen</button>
+
     <div class="chat" id="chat"></div>
 
     <div class="chat-container">
         <input type="text" id="chatInput" placeholder="ChatGPT fragen...">
         <button onclick="sendChatMessage()">Senden</button>
+    </div>
+
+    <div class="chat-container">
+        <input type="text" id="imagePrompt" placeholder="Bildbeschreibung eingeben...">
+        <button onclick="generateImage()">🎨 Bild generieren</button>
     </div>
 
     <script>
@@ -89,7 +101,11 @@
             chatBox.innerHTML = "";
             chatHistory.forEach(message => {
                 const messageDiv = document.createElement("div");
-                messageDiv.textContent = (message.role === "user" ? "👤 " : "🤖 ") + message.content;
+                if (message.imageUrl) {
+                    messageDiv.innerHTML = `🤖 <img src="${message.imageUrl}" alt="Generiertes Bild">`;
+                } else {
+                    messageDiv.textContent = (message.role === "user" ? "👤 " : "🤖 ") + message.content;
+                }
                 messageDiv.className = "message " + (message.role === "user" ? "user-message" : "bot-message");
                 chatBox.appendChild(messageDiv);
             });
@@ -126,6 +142,38 @@
             }
 
             input.value = "";
+        }
+
+        async function generateImage() {
+            const promptInput = document.getElementById("imagePrompt");
+            if (!promptInput.value.trim()) return;
+
+            const userMessage = { role: "user", content: "🎨 " + promptInput.value };
+            chatHistory.push(userMessage);
+            localStorage.setItem("chatHistory", JSON.stringify(chatHistory));
+            renderChat();
+
+            try {
+                const response = await fetch("/api/dalle", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ prompt: promptInput.value })
+                });
+
+                if (!response.ok) {
+                    throw new Error(`Fehler: ${response.status} ${response.statusText}`);
+                }
+
+                const data = await response.json();
+                const botMessage = { role: "assistant", imageUrl: data.imageUrl };
+                chatHistory.push(botMessage);
+                localStorage.setItem("chatHistory", JSON.stringify(chatHistory));
+                renderChat();
+            } catch (error) {
+                console.error("DALL·E-Fehler:", error);
+            }
+
+            promptInput.value = "";
         }
     </script>
 </body>
