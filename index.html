@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ChatGPT Kostenlos</title>
+    <title>ChatGPT Kostenlos (GPT-3.5, kein API-Key nötig)</title>
     <style>
         body { font-family: Arial, sans-serif; max-width: 600px; margin: 20px auto; text-align: center; }
         #chat { margin-top: 20px; text-align: left; }
@@ -13,7 +13,7 @@
     </style>
 </head>
 <body>
-    <h1>ChatGPT Kostenlos</h1>
+    <h1>ChatGPT Kostenlos (GPT-3.5, kein API-Key nötig)</h1>
     <input id="userInput" type="text" placeholder="Frage stellen..." style="width: 80%; padding: 10px;">
     <button onclick="sendMessage()">Senden</button>
     <div id="chat"></div>
@@ -30,17 +30,22 @@
             userMessage.className = "user";
             chat.appendChild(userMessage);
 
-            const response = await fetch("/api/chat", {
+            // Öffentliche GPT-3.5 API (z. B. Hugging Face oder OpenRouter)
+            const response = await fetch("https://free.churchless.tech/v1/chat/completions", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ message: input.value })
+                body: JSON.stringify({
+                    model: "gpt-3.5-turbo",
+                    messages: [{ role: "user", content: input.value }],
+                    max_tokens: 100
+                })
             });
             
             const data = await response.json();
 
-            // Antwort von ChatGPT anzeigen
+            // Antwort von GPT-3.5 anzeigen
             const botMessage = document.createElement("div");
-            botMessage.textContent = "🤖 " + data.reply;
+            botMessage.textContent = "🤖 " + (data.choices?.[0]?.message?.content || "Fehler bei der Antwort.");
             botMessage.className = "bot";
             chat.appendChild(botMessage);
             
