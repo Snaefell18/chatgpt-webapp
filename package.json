@@ -1,4 +1,5 @@
 {
+  "type": "module",  // ✅ Damit kann `import` verwendet werden
   "name": "eurogpt",
   "version": "1.0.0",
   "description": "ChatGPT & DALL·E Webapp",
