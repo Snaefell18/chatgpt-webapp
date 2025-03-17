@@ -115,11 +115,11 @@
                     imgElement.src,
                     'deu', // Sprache: Deutsch
                     {
-                        logger: (m) => console.log(m) // Optional: Fortschritt in der Konsole anzeigen
+                        logger: (m) => console.log(m) // Fortschritt in der Konsole anzeigen
                     }
                 ).then(({ data: { text } }) => {
                     console.log("Erkannter Text:", text);
-                    generateFlashcards(text);
+                    sendToChatGPT(text);
                 });
             } catch (error) {
                 console.error("Fehler bei der Texterkennung:", error);
@@ -127,15 +127,41 @@
             }
         }
 
-        function generateFlashcards(text) {
-            const sentences = text.split(". ");
+        async function sendToChatGPT(text) {
+            try {
+                const response = await fetch("https://api.openai.com/v1/chat/completions", {
+                    method: "POST",
+                    headers: {
+                        "Authorization": `Bearer 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`,
+                        "Content-Type": "application/json"
+                    },
+                    body: JSON.stringify({
+                        model: "gpt-4",
+                        messages: [{ role: "system", content: "Extrahiere die wichtigsten Inhalte aus diesem Text und erstelle 5 Lernkarteikarten im Stil von 'Frage: ... Antwort: ...'." },
+                                   { role: "user", content: text }],
+                        max_tokens: 250
+                    })
+                });
+                
+                const data = await response.json();
+                console.log("GPT-Antwort:", data);
+                generateFlashcards(data.choices[0].message.content);
+            } catch (error) {
+                console.error("Fehler bei der Anfrage an ChatGPT:", error);
+                alert("Fehler bei der Generierung der Lernkarten durch ChatGPT.");
+            }
+        }
+
+        function generateFlashcards(responseText) {
+            const lines = responseText.split("\n");
             const flashcardsContainer = document.getElementById("flashcards");
             flashcardsContainer.innerHTML = "";
-            sentences.forEach((sentence, index) => {
-                if (sentence.trim()) {
+            
+            lines.forEach((line, index) => {
+                if (line.trim()) {
                     const card = document.createElement("div");
                     card.className = "card";
-                    card.textContent = `🔹 Karte ${index + 1}: ${sentence}`;
+                    card.textContent = `🔹 Karte ${index + 1}: ${line}`;
                     flashcardsContainer.appendChild(card);
                 }
             });
