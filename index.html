@@ -122,7 +122,7 @@
         renderChat();
 
         try {
-            const response = await fetch("/api/chat.cjs", { // ✅ Hier auf `.cjs` umgestellt
+            const response = await fetch("/api/chat.js", { // ✅ API-Route auf `.js` geändert
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({ messages: chatHistory })
@@ -154,7 +154,7 @@
         renderChat();
 
         try {
-            const response = await fetch("/api/dalle.cjs", { // ✅ Hier auf `.cjs` umgestellt
+            const response = await fetch("/api/dalle.js", { // ✅ API-Route auf `.js` geändert
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({ prompt: promptInput.value })
@@ -176,6 +176,7 @@
         promptInput.value = "";
     }
 </script>
+
 
 </body>
 </html>
