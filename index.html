@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>EUROGPT – Lernkarteikarten</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/tesseract.js/4.0.2/tesseract.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.min.js"></script>
     <style>
         body {
             font-family: 'Arial', sans-serif;
@@ -65,66 +66,71 @@
 </head>
 <body>
     <div class="logo">EUROGPT – Lernkarten</div>
-    <input type="file" accept="image/*" id="imageUpload">
-    <button onclick="captureImage()">📷 Foto aufnehmen</button>
-    <img id="preview">
-    <button onclick="processImage()">📖 Text analysieren & Lernkarten erstellen</button>
+    <input type="file" accept="image/*,.pdf,.txt" id="fileUpload">
+    <button onclick="processFile()">📖 Datei analysieren & Lernkarten erstellen</button>
     <div class="cards" id="flashcards"></div>
 
     <script>
-        function captureImage() {
-            const input = document.createElement("input");
-            input.type = "file";
-            input.accept = "image/*";
-            input.capture = "environment";
-            input.onchange = (event) => {
-                const file = event.target.files[0];
-                if (file) {
-                    showImage(file);
-                }
-            };
-            input.click();
-        }
-
-        document.getElementById("imageUpload").addEventListener("change", function(event) {
+        document.getElementById("fileUpload").addEventListener("change", function(event) {
             const file = event.target.files[0];
             if (file) {
-                showImage(file);
+                processFile(file);
             }
         });
 
-        function showImage(file) {
+        async function processFile(file) {
+            if (!file) {
+                alert("Bitte eine Datei hochladen!");
+                return;
+            }
+
+            if (file.type === "application/pdf") {
+                extractTextFromPDF(file);
+            } else if (file.type.startsWith("image/")) {
+                extractTextFromImage(file);
+            } else if (file.type === "text/plain") {
+                extractTextFromTXT(file);
+            } else {
+                alert("Ungültiges Dateiformat. Bitte ein Bild, PDF oder eine Textdatei hochladen.");
+            }
+        }
+
+        function extractTextFromPDF(file) {
+            const reader = new FileReader();
+            reader.onload = async function() {
+                const typedArray = new Uint8Array(this.result);
+                const pdf = await pdfjsLib.getDocument({ data: typedArray }).promise;
+                let fullText = "";
+                for (let i = 1; i <= pdf.numPages; i++) {
+                    const page = await pdf.getPage(i);
+                    const textContent = await page.getTextContent();
+                    fullText += textContent.items.map(item => item.str).join(" ") + "\n";
+                }
+                sendToChatGPT(fullText);
+            };
+            reader.readAsArrayBuffer(file);
+        }
+
+        function extractTextFromImage(file) {
             const reader = new FileReader();
             reader.onload = function(e) {
-                const img = document.getElementById("preview");
-                img.src = e.target.result;
-                img.style.display = "block";
+                Tesseract.recognize(
+                    e.target.result,
+                    'deu',
+                    { logger: m => console.log(m) }
+                ).then(({ data: { text } }) => {
+                    sendToChatGPT(text);
+                });
             };
             reader.readAsDataURL(file);
         }
 
-        async function processImage() {
-            const imgElement = document.getElementById("preview");
-            if (!imgElement.src) {
-                alert("Bitte zuerst ein Bild hochladen oder aufnehmen!");
-                return;
-            }
-
-            try {
-                Tesseract.recognize(
-                    imgElement.src,
-                    'deu', // Sprache: Deutsch
-                    {
-                        logger: (m) => console.log(m) // Fortschritt in der Konsole anzeigen
-                    }
-                ).then(({ data: { text } }) => {
-                    console.log("Erkannter Text:", text);
-                    sendToChatGPT(text);
-                });
-            } catch (error) {
-                console.error("Fehler bei der Texterkennung:", error);
-                alert("Fehler bei der Verarbeitung des Bildes.");
-            }
+        function extractTextFromTXT(file) {
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                sendToChatGPT(e.target.result);
+            };
+            reader.readAsText(file);
         }
 
         async function sendToChatGPT(text) {
@@ -136,7 +142,7 @@
                         "Content-Type": "application/json"
                     },
                     body: JSON.stringify({
-                        model: "gpt-4",
+                        model: "gpt-4o-mini",
                         messages: [{ role: "system", content: "Extrahiere die wichtigsten Inhalte aus diesem Text und erstelle 5 Lernkarteikarten im Stil von 'Frage: ... Antwort: ...'." },
                                    { role: "user", content: text }],
                         max_tokens: 250
