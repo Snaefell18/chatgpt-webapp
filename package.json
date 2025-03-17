@@ -1,0 +1,17 @@
+{
+  "name": "eurogpt",
+  "version": "1.0.0",
+  "description": "ChatGPT & DALL·E Webapp",
+  "main": "index.js",
+  "dependencies": {
+    "node-fetch": "^3.3.0"
+  },
+  "engines": {
+    "node": "22.x"
+  },
+  "scripts": {
+    "start": "node index.js"
+  },
+  "author": "Dein Name",
+  "license": "MIT"
+}
