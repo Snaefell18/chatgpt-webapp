@@ -100,14 +100,26 @@
                     body: JSON.stringify({ messages: [{ role: "user", content: input.value }] })
                 });
                 
+                if (!response.ok) {
+                    throw new Error(`Fehler: ${response.status} ${response.statusText}`);
+                }
+                
                 const data = await response.json();
                 
                 const botMessage = document.createElement("div");
-                botMessage.textContent = "🤖 " + data.choices[0].message.content;
+                if (data.choices && data.choices.length > 0) {
+                    botMessage.textContent = "🤖 " + data.choices[0].message.content;
+                } else {
+                    botMessage.textContent = "⚠️ Keine Antwort erhalten. Prüfe die API-Route!";
+                }
                 botMessage.className = "message bot-message";
                 chatBox.appendChild(botMessage);
             } catch (error) {
                 console.error("ChatGPT-Fehler:", error);
+                const errorMessage = document.createElement("div");
+                errorMessage.textContent = "⚠️ Fehler beim Abrufen der Antwort. Prüfe die Konsole!";
+                errorMessage.className = "message bot-message";
+                chatBox.appendChild(errorMessage);
             }
             input.value = "";
         }
