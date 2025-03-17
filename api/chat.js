@@ -1,14 +1,14 @@
-export default async function handler(req, res) {
-    console.log("🔹 Anfrage an API-Route erhalten:", req.method);
+async function handler(req, res) {
+    console.log("🔹 API-Route wurde aufgerufen:", req.method);
 
     if (req.method !== "POST") {
-        console.error("🔴 Fehler: Ungültige Methode:", req.method);
+        console.error("🔴 Fehler: Ungültige HTTP-Methode:", req.method);
         return res.status(405).json({ error: "Nur POST-Anfragen erlaubt" });
     }
 
     try {
         const body = await req.json();
-        console.log("🔹 Eingehende Daten:", body);
+        console.log("🔹 Eingehender Body:", body);
 
         if (!body.messages || !Array.isArray(body.messages)) {
             console.error("🔴 Fehler: `messages` fehlt oder ist kein Array:", body);
@@ -17,7 +17,7 @@ export default async function handler(req, res) {
 
         const apiKey = process.env.OPENAI_API_KEY;
         if (!apiKey) {
-            console.error("🔴 Fehler: Kein OpenAI API-Key in Vercel gespeichert!");
+            console.error("🔴 Fehler: Kein API-Key in den Umgebungsvariablen gefunden!");
             return res.status(500).json({ error: "Fehlender API-Key." });
         }
 
@@ -36,11 +36,12 @@ export default async function handler(req, res) {
             })
         });
 
-        console.log("🔹 Antwort von OpenAI erhalten:", response.status);
+        console.log("🔹 Antwort von OpenAI erhalten:", response.status, response.statusText);
 
         if (!response.ok) {
-            console.error("🔴 Fehler bei OpenAI-Anfrage:", response.status, response.statusText);
-            return res.status(response.status).json({ error: `OpenAI Fehler: ${response.statusText}` });
+            const errorText = await response.text();
+            console.error("🔴 Fehler bei OpenAI-Anfrage:", response.status, response.statusText, errorText);
+            return res.status(response.status).json({ error: `OpenAI Fehler: ${response.statusText}`, details: errorText });
         }
 
         const data = await response.json();
@@ -54,4 +55,8 @@ export default async function handler(req, res) {
         res.status(200).json(data);
     } catch (error) {
         console.error("🔴 Unerwarteter Fehler:", error);
-        res.status(500).json({ error
+        res.status(500).json({ error: "Interner Serverfehler", details: error.message });
+    }
+}
+
+module.exports = handler; // ✅ CommonJS-Export anstelle von `export default`
