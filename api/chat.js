@@ -58,5 +58,6 @@ async function handler(req, res) {
         res.status(500).json({ error: "Interner Serverfehler", details: error.message });
     }
 }
+console.log("🔹 API-Key geladen:", process.env.OPENAI_API_KEY ? "✅ Gefunden" : "❌ Nicht gefunden");
 
 module.exports = handler;  // ✅ CommonJS-Export
