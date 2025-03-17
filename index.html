@@ -1,12 +1,12 @@
 <!DOCTYPE html>
 <html lang="de">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>EUROChatty & EURODall-E</title>
   <style>
     body {
-      font-family: 'Arial', sans-serif;
+      font-family: Arial, sans-serif;
       background: #1e1e2f;
       color: white;
       max-width: 600px;
@@ -15,18 +15,40 @@
       padding: 20px;
     }
     .logo {
-      text-align: center;
       margin-bottom: 20px;
+      display: flex;
+      justify-content: center;
     }
+    /* Logo: auf Handy volle Breite, im Browser mind. so breit wie Buttons (320px) */
     .logo img {
-      max-width: 250px; /* Logo-Größe anpassen */
+      width: 100%;
+      max-width: 320px; 
       height: auto;
+    }
+    .stock-container {
+      background: #4f46e5;
+      padding: 10px;
+      border-radius: 8px;
+      margin-bottom: 20px;
+      display: inline-block;
+      min-width: 320px; /* Mindestens so breit wie Buttons */
+    }
+    .stock-container h3 {
+      margin: 0;
+      font-size: 1.1rem;
+    }
+    .stock-price {
+      font-weight: bold;
+      font-size: 1.2rem;
     }
     .button-container {
       display: flex;
       flex-direction: column;
       gap: 15px;
       margin-top: 20px;
+      width: 100%;
+      max-width: 320px; /* Buttons sind max. 320px breit */
+      margin: 20px auto;
     }
     button {
       padding: 12px;
@@ -37,6 +59,7 @@
       font-weight: bold;
       color: black;
       background: #32CD32;
+      min-width: 100%;
     }
     button:hover {
       background: #28a428;
@@ -77,19 +100,25 @@
 </head>
 <body>
 
-  <!-- Logo oben -->
+  <!-- Logo -->
   <div class="logo">
-    <!-- Ersetze 'logo.png' durch deinen Bildpfad -->
+    <!-- Ersetze 'logo.png' durch den Pfad zu deinem Bild -->
     <img src="logo.png" alt="EUROChatty Logo">
   </div>
 
-  <!-- Startseite: Buttons für EUROChatty & EURODall-E -->
+  <!-- Aktienkurs von Revvity -->
+  <div class="stock-container">
+    <h3>Aktienkurs von Revvity (RVTY)</h3>
+    <div class="stock-price" id="revvityPrice">Wird geladen...</div>
+  </div>
+
+  <!-- Buttons für EUROChatty & EURODall-E -->
   <div class="button-container">
     <button onclick="showSection('eurochatty')">EUROChatty</button>
     <button onclick="showSection('eurodalle')">EURODall-E</button>
   </div>
 
-  <!-- Bereich für EUROChatty (Chat mit GPT) -->
+  <!-- Bereich für EUROChatty (Chat) -->
   <div id="eurochatty" class="content">
     <h2>💬 EUROChatty</h2>
     <input type="text" id="chatInput" placeholder="Deine Nachricht...">
@@ -106,23 +135,46 @@
   </div>
 
   <script>
-    /* -------------------------
-       1) Allgemeine Navigation
-       ------------------------- */
+    /* -----------------------------------------
+       1) Navigation: Zeige/Verstecke Bereiche
+       ----------------------------------------- */
     function showSection(sectionId) {
-      // Beide Bereiche ausblenden
       document.getElementById("eurochatty").classList.remove("visible");
       document.getElementById("eurodalle").classList.remove("visible");
-      // Angeforderten Bereich einblenden
       document.getElementById(sectionId).classList.add("visible");
     }
 
-    /* -------------------------
-       2) Chat-Funktion (EUROChatty)
-       ------------------------- */
-    let chatHistory = JSON.parse(localStorage.getItem("chattyHistory")) || [];
+    /* -----------------------------------------
+       2) Aktienkurs von Revvity laden
+       ----------------------------------------- */
+    document.addEventListener("DOMContentLoaded", fetchStockPrice);
 
-    // Chatverlauf rendern
+    function fetchStockPrice() {
+      // Ersetze 'YOUR_API_KEY' durch deinen echten Key
+      // z.B. von Alpha Vantage: https://www.alphavantage.co/
+      const url = "https://www.alphavantage.co/query?function=GLOBAL_QUOTE&symbol=RVTY&apikey=YOUR_API_KEY";
+
+      fetch(url)
+        .then(res => res.json())
+        .then(data => {
+          const price = data["Global Quote"]?.["05. price"];
+          if (price) {
+            document.getElementById("revvityPrice").textContent = `$${parseFloat(price).toFixed(2)}`;
+          } else {
+            document.getElementById("revvityPrice").textContent = "Kurs nicht verfügbar";
+          }
+        })
+        .catch(err => {
+          console.error("Fehler beim Laden des Aktienkurses:", err);
+          document.getElementById("revvityPrice").textContent = "Fehler beim Laden";
+        });
+    }
+
+    /* -----------------------------------------
+       3) Chat-Funktion (EUROChatty)
+       ----------------------------------------- */
+    let chatHistory = [];
+
     function renderChat() {
       const chatBox = document.getElementById("chatBox");
       chatBox.innerHTML = "";
@@ -133,20 +185,16 @@
         chatBox.appendChild(div);
       });
     }
-    renderChat();
 
     async function sendChatMessage() {
       const input = document.getElementById("chatInput");
       if (!input.value.trim()) return;
 
-      // Nutzer-Nachricht im Verlauf speichern
       const userMsg = { role: "user", content: input.value };
       chatHistory.push(userMsg);
-      localStorage.setItem("chattyHistory", JSON.stringify(chatHistory));
       renderChat();
 
       try {
-        // Chat-Verlauf an API schicken
         const response = await fetch("/api/chat.js", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
@@ -157,25 +205,22 @@
           throw new Error(`Fehler: ${response.status} ${response.statusText}`);
         }
 
-        // Antwort von GPT
         const data = await response.json();
         const botContent = data.choices[0]?.message?.content || "⚠️ Keine Antwort erhalten.";
         const botMsg = { role: "assistant", content: botContent };
-
-        // Im Verlauf speichern
         chatHistory.push(botMsg);
-        localStorage.setItem("chattyHistory", JSON.stringify(chatHistory));
         renderChat();
       } catch (error) {
         console.error("ChatGPT-Fehler:", error);
       }
+
       input.value = "";
     }
 
-    /* -------------------------
-       3) Bildgenerierung (EURODall-E)
-       ------------------------- */
-    let dalleHistory = JSON.parse(localStorage.getItem("dalleHistory")) || [];
+    /* -----------------------------------------
+       4) Bildgenerierung (EURODall-E)
+       ----------------------------------------- */
+    let dalleHistory = [];
 
     function renderDalle() {
       const imageBox = document.getElementById("imageBox");
@@ -183,18 +228,16 @@
       dalleHistory.forEach(item => {
         const div = document.createElement("div");
         if (item.role === "user") {
-          // Nutzer-Eingabe
           div.textContent = "🎨 " + item.content;
           div.className = "message user-message";
         } else {
-          // Generiertes Bild
+          // Bild anzeigen
           div.innerHTML = `<img src="${item.imageUrl}" alt="Generiertes Bild">`;
           div.className = "message bot-message";
         }
         imageBox.appendChild(div);
       });
     }
-    renderDalle();
 
     async function generateImage() {
       const promptInput = document.getElementById("imagePrompt");
@@ -202,7 +245,6 @@
 
       const userItem = { role: "user", content: promptInput.value };
       dalleHistory.push(userItem);
-      localStorage.setItem("dalleHistory", JSON.stringify(dalleHistory));
       renderDalle();
 
       try {
@@ -219,7 +261,6 @@
         const data = await response.json();
         const botItem = { role: "assistant", imageUrl: data.imageUrl };
         dalleHistory.push(botItem);
-        localStorage.setItem("dalleHistory", JSON.stringify(dalleHistory));
         renderDalle();
       } catch (error) {
         console.error("DALL·E-Fehler:", error);
