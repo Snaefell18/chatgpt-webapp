@@ -1,8 +1,8 @@
-const fetch = require("node-fetch");
+import fetch from "node-fetch"; // ✅ Jetzt als ES-Modul
 
 const OPENAI_API_KEY = process.env.OPENAI_API_KEY; // 🔒 API-Key aus Vercel
 
-async function handler(req, res) {
+export default async function handler(req, res) {
     if (req.method !== "POST") {
         return res.status(405).json({ error: "Nur POST-Anfragen erlaubt" });
     }
@@ -42,5 +42,3 @@ async function handler(req, res) {
         res.status(500).json({ error: "Interner Serverfehler", details: error.message });
     }
 }
-
-module.exports = handler;
