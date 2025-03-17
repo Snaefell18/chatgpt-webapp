@@ -4,26 +4,23 @@ async function sendMessage() {
 
     if (!input.value) return;
 
+    // Nutzer-Nachricht anzeigen
     const userMessage = document.createElement("p");
     userMessage.textContent = "👤 " + input.value;
     chat.appendChild(userMessage);
 
-    const response = await fetch("https://api.openai.com/v1/chat/completions", {
+    // Anfrage an die API senden (über den Vercel AI SDK Endpunkt)
+    const response = await fetch("/api/chat", {
         method: "POST",
-        headers: {
-            "Authorization": "Bearer YOUR_OPENAI_API_KEY",
-            "Content-Type": "application/json"
-        },
-        body: JSON.stringify({
-            model: "gpt-4",
-            messages: [{ role: "user", content: input.value }],
-            max_tokens: 100
-        })
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ message: input.value })
     });
 
     const data = await response.json();
+
+    // Antwort von ChatGPT anzeigen
     const botMessage = document.createElement("p");
-    botMessage.textContent = "🤖 " + data.choices[0].message.content;
+    botMessage.textContent = "🤖 " + data.reply;
     chat.appendChild(botMessage);
 
     input.value = "";
