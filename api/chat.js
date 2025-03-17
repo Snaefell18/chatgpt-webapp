@@ -9,7 +9,7 @@ export default async function handler(req, res) {
         const response = await fetch("https://api.openai.com/v1/chat/completions", {
             method: "POST",
             headers: {
-                "Authorization": `Bearer ${apiKey}`,
+                "Authorization": `Bearer ${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}`,
                 "Content-Type": "application/json"
             },
             body: JSON.stringify({
