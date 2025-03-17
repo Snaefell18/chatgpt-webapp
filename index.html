@@ -150,7 +150,7 @@
                 const response = await fetch("https://api.openai.com/v1/chat/completions", {
                     method: "POST",
                     headers: {
-                        "Authorization": `Bearer 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`,
+                        "Authorization": `Bearer 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`,
                         "Content-Type": "application/json"
                     },
                     body: JSON.stringify({
@@ -182,7 +182,7 @@
             try {
                 const response = await fetch("https://api.openai.com/v1/chat/completions", {
                     method: "POST",
-                    headers: { "Authorization": `Bearer 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`, "Content-Type": "application/json" },
+                    headers: { "Authorization": `Bearer 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`, "Content-Type": "application/json" },
                     body: JSON.stringify({ model: "gpt-4o-mini", messages: [{ role: "user", content: input.value }], max_tokens: 200 })
                 });
                 const data = await response.json();
