@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>EUROGPT – Lernkarteikarten</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/tesseract.js/4.0.2/tesseract.min.js"></script>
     <style>
         body {
             font-family: 'Arial', sans-serif;
@@ -103,23 +104,23 @@
         }
 
         async function processImage() {
-            const img = document.getElementById("preview").src;
-            if (!img) {
+            const imgElement = document.getElementById("preview");
+            if (!imgElement.src) {
                 alert("Bitte zuerst ein Bild hochladen oder aufnehmen!");
                 return;
             }
 
             try {
-                const response = await fetch("https://api.ocr.space/parse/image", {
-                    method: "POST",
-                    headers: {
-                        "apikey": "helloworld"
-                    },
-                    body: new FormData(document.getElementById("imageUpload"))
+                Tesseract.recognize(
+                    imgElement.src,
+                    'deu', // Sprache: Deutsch
+                    {
+                        logger: (m) => console.log(m) // Optional: Fortschritt in der Konsole anzeigen
+                    }
+                ).then(({ data: { text } }) => {
+                    console.log("Erkannter Text:", text);
+                    generateFlashcards(text);
                 });
-                const data = await response.json();
-                const extractedText = data.ParsedResults[0]?.ParsedText || "Kein Text erkannt.";
-                generateFlashcards(extractedText);
             } catch (error) {
                 console.error("Fehler bei der Texterkennung:", error);
                 alert("Fehler bei der Verarbeitung des Bildes.");
