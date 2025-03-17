@@ -93,88 +93,89 @@
         <button onclick="generateImage()">🎨 Bild generieren</button>
     </div>
 
-    <script>
-        let chatHistory = JSON.parse(localStorage.getItem("chatHistory")) || [];
-        const chatBox = document.getElementById("chat");
+   <script>
+    let chatHistory = JSON.parse(localStorage.getItem("chatHistory")) || [];
+    const chatBox = document.getElementById("chat");
 
-        function renderChat() {
-            chatBox.innerHTML = "";
-            chatHistory.forEach(message => {
-                const messageDiv = document.createElement("div");
-                if (message.imageUrl) {
-                    messageDiv.innerHTML = `🤖 <img src="${message.imageUrl}" alt="Generiertes Bild">`;
-                } else {
-                    messageDiv.textContent = (message.role === "user" ? "👤 " : "🤖 ") + message.content;
-                }
-                messageDiv.className = "message " + (message.role === "user" ? "user-message" : "bot-message");
-                chatBox.appendChild(messageDiv);
-            });
-        }
+    function renderChat() {
+        chatBox.innerHTML = "";
+        chatHistory.forEach(message => {
+            const messageDiv = document.createElement("div");
+            if (message.imageUrl) {
+                messageDiv.innerHTML = `🤖 <img src="${message.imageUrl}" alt="Generiertes Bild">`;
+            } else {
+                messageDiv.textContent = (message.role === "user" ? "👤 " : "🤖 ") + message.content;
+            }
+            messageDiv.className = "message " + (message.role === "user" ? "user-message" : "bot-message");
+            chatBox.appendChild(messageDiv);
+        });
+    }
+    renderChat();
+
+    async function sendChatMessage() {
+        const input = document.getElementById("chatInput");
+        if (!input.value.trim()) return;
+
+        const userMessage = { role: "user", content: input.value };
+        chatHistory.push(userMessage);
+        localStorage.setItem("chatHistory", JSON.stringify(chatHistory));
         renderChat();
 
-        async function sendChatMessage() {
-            const input = document.getElementById("chatInput");
-            if (!input.value.trim()) return;
+        try {
+            const response = await fetch("/api/chat.cjs", { // ✅ Hier auf `.cjs` umgestellt
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ messages: chatHistory })
+            });
 
-            const userMessage = { role: "user", content: input.value };
-            chatHistory.push(userMessage);
-            localStorage.setItem("chatHistory", JSON.stringify(chatHistory));
-            renderChat();
-
-            try {
-                const response = await fetch("/api/chat", {
-                    method: "POST",
-                    headers: { "Content-Type": "application/json" },
-                    body: JSON.stringify({ messages: chatHistory })
-                });
-
-                if (!response.ok) {
-                    throw new Error(`Fehler: ${response.status} ${response.statusText}`);
-                }
-
-                const data = await response.json();
-                const botMessage = { role: "assistant", content: data.choices[0]?.message?.content || "⚠️ Keine Antwort erhalten." };
-                chatHistory.push(botMessage);
-                localStorage.setItem("chatHistory", JSON.stringify(chatHistory));
-                renderChat();
-            } catch (error) {
-                console.error("ChatGPT-Fehler:", error);
+            if (!response.ok) {
+                throw new Error(`Fehler: ${response.status} ${response.statusText}`);
             }
 
-            input.value = "";
-        }
-
-        async function generateImage() {
-            const promptInput = document.getElementById("imagePrompt");
-            if (!promptInput.value.trim()) return;
-
-            const userMessage = { role: "user", content: "🎨 " + promptInput.value };
-            chatHistory.push(userMessage);
+            const data = await response.json();
+            const botMessage = { role: "assistant", content: data.choices[0]?.message?.content || "⚠️ Keine Antwort erhalten." };
+            chatHistory.push(botMessage);
             localStorage.setItem("chatHistory", JSON.stringify(chatHistory));
             renderChat();
+        } catch (error) {
+            console.error("ChatGPT-Fehler:", error);
+        }
 
-            try {
-                const response = await fetch("/api/dalle", {
-                    method: "POST",
-                    headers: { "Content-Type": "application/json" },
-                    body: JSON.stringify({ prompt: promptInput.value })
-                });
+        input.value = "";
+    }
 
-                if (!response.ok) {
-                    throw new Error(`Fehler: ${response.status} ${response.statusText}`);
-                }
+    async function generateImage() {
+        const promptInput = document.getElementById("imagePrompt");
+        if (!promptInput.value.trim()) return;
 
-                const data = await response.json();
-                const botMessage = { role: "assistant", imageUrl: data.imageUrl };
-                chatHistory.push(botMessage);
-                localStorage.setItem("chatHistory", JSON.stringify(chatHistory));
-                renderChat();
-            } catch (error) {
-                console.error("DALL·E-Fehler:", error);
+        const userMessage = { role: "user", content: "🎨 " + promptInput.value };
+        chatHistory.push(userMessage);
+        localStorage.setItem("chatHistory", JSON.stringify(chatHistory));
+        renderChat();
+
+        try {
+            const response = await fetch("/api/dalle.cjs", { // ✅ Hier auf `.cjs` umgestellt
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ prompt: promptInput.value })
+            });
+
+            if (!response.ok) {
+                throw new Error(`Fehler: ${response.status} ${response.statusText}`);
             }
 
-            promptInput.value = "";
+            const data = await response.json();
+            const botMessage = { role: "assistant", imageUrl: data.imageUrl };
+            chatHistory.push(botMessage);
+            localStorage.setItem("chatHistory", JSON.stringify(chatHistory));
+            renderChat();
+        } catch (error) {
+            console.error("DALL·E-Fehler:", error);
         }
-    </script>
+
+        promptInput.value = "";
+    }
+</script>
+
 </body>
 </html>
