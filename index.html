@@ -25,20 +25,22 @@
       max-width: 320px; 
       height: auto;
     }
+    /* Aktienkursbereich: Weiße Box */
     .stock-container {
-      background: #4f46e5;
+      background: white;
       padding: 10px;
       border-radius: 8px;
       margin-bottom: 20px;
       display: inline-block;
       min-width: 320px; /* Mindestens so breit wie Buttons */
+      color: black;
+      font-weight: bold;
     }
     .stock-container h3 {
       margin: 0;
       font-size: 1.1rem;
     }
     .stock-price {
-      font-weight: bold;
       font-size: 1.2rem;
     }
     .button-container {
@@ -47,7 +49,7 @@
       gap: 15px;
       margin-top: 20px;
       width: 100%;
-      max-width: 320px; /* Buttons sind max. 320px breit */
+      max-width: 320px;
       margin: 20px auto;
     }
     button {
@@ -60,9 +62,13 @@
       color: black;
       background: #32CD32;
       min-width: 100%;
+      transition: background-color 0.3s;
+    }
+    button.active {
+      background-color: #28a428; /* Hellt grüner, wenn aktiv */
     }
     button:hover {
-      background: #28a428;
+      background-color: #228b22;
     }
     .content {
       display: none;
@@ -102,7 +108,6 @@
 
   <!-- Logo -->
   <div class="logo">
-    <!-- Ersetze 'logo.png' durch den Pfad zu deinem Bild -->
     <img src="logo.png" alt="EUROChatty Logo">
   </div>
 
@@ -114,13 +119,12 @@
 
   <!-- Buttons für EUROChatty & EURODall-E -->
   <div class="button-container">
-    <button onclick="showSection('eurochatty')">EUROChatty</button>
-    <button onclick="showSection('eurodalle')">EURODall-E</button>
+    <button id="chatButton" onclick="showSection('eurochatty', this)">EUROChatty</button>
+    <button id="dalleButton" onclick="showSection('eurodalle', this)">EURODall-E</button>
   </div>
 
   <!-- Bereich für EUROChatty (Chat) -->
   <div id="eurochatty" class="content">
-    <h2>💬 EUROChatty</h2>
     <input type="text" id="chatInput" placeholder="Deine Nachricht...">
     <button onclick="sendChatMessage()">Senden</button>
     <div id="chatBox"></div>
@@ -128,30 +132,34 @@
 
   <!-- Bereich für EURODall-E (Bildgenerierung) -->
   <div id="eurodalle" class="content">
-    <h2>🎨 EURODall-E</h2>
     <input type="text" id="imagePrompt" placeholder="Bildbeschreibung eingeben...">
     <button onclick="generateImage()">Generieren</button>
     <div id="imageBox"></div>
   </div>
 
   <script>
-    /* -----------------------------------------
-       1) Navigation: Zeige/Verstecke Bereiche
-       ----------------------------------------- */
-    function showSection(sectionId) {
+    /* -------------------------
+       1) Navigation: Zeige/Verstecke Bereiche & Highlight Button
+       ------------------------- */
+    function showSection(sectionId, button) {
+      // Verstecke beide Bereiche
       document.getElementById("eurochatty").classList.remove("visible");
       document.getElementById("eurodalle").classList.remove("visible");
+      // Entferne die aktive Klasse von allen Buttons
+      document.querySelectorAll(".button-container button").forEach(btn => btn.classList.remove("active"));
+      // Füge die aktive Klasse zum geklickten Button hinzu
+      button.classList.add("active");
+      // Zeige den angeforderten Bereich
       document.getElementById(sectionId).classList.add("visible");
     }
 
-    /* -----------------------------------------
+    /* -------------------------
        2) Aktienkurs von Revvity laden
-       ----------------------------------------- */
+       ------------------------- */
     document.addEventListener("DOMContentLoaded", fetchStockPrice);
 
     function fetchStockPrice() {
-      // Ersetze 'YOUR_API_KEY' durch deinen echten Key
-      // z.B. von Alpha Vantage: https://www.alphavantage.co/
+      // API-URL für Revvity Aktie (Platzhalter für echte API)
       const url = "https://www.alphavantage.co/query?function=GLOBAL_QUOTE&symbol=RVTY&apikey=YOUR_API_KEY";
 
       fetch(url)
@@ -170,9 +178,9 @@
         });
     }
 
-    /* -----------------------------------------
+    /* -------------------------
        3) Chat-Funktion (EUROChatty)
-       ----------------------------------------- */
+       ------------------------- */
     let chatHistory = [];
 
     function renderChat() {
@@ -217,9 +225,9 @@
       input.value = "";
     }
 
-    /* -----------------------------------------
+    /* -------------------------
        4) Bildgenerierung (EURODall-E)
-       ----------------------------------------- */
+       ------------------------- */
     let dalleHistory = [];
 
     function renderDalle() {
@@ -231,7 +239,6 @@
           div.textContent = "🎨 " + item.content;
           div.className = "message user-message";
         } else {
-          // Bild anzeigen
           div.innerHTML = `<img src="${item.imageUrl}" alt="Generiertes Bild">`;
           div.className = "message bot-message";
         }
@@ -269,5 +276,6 @@
       promptInput.value = "";
     }
   </script>
+
 </body>
 </html>
