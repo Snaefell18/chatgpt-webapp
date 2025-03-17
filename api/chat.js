@@ -3,7 +3,8 @@ export default async function handler(req, res) {
         return res.status(405).json({ error: "Nur POST-Anfragen erlaubt" });
     }
 
-    const apiKey = process.env.OPENAI_API_KEY; // Key wird sicher aus Vercel geladen
+    const apiKey = process.env.OPENAI_API_KEY; // OpenAI API-Key aus Vercel
+    console.log("Empfangene Anfrage:", req.body);
 
     try {
         const response = await fetch("https://api.openai.com/v1/chat/completions", {
@@ -20,9 +21,15 @@ export default async function handler(req, res) {
         });
 
         const data = await response.json();
+        console.log("API Antwort:", data);
+
+        if (!data.choices) {
+            throw new Error("Ungültige API-Antwort");
+        }
+
         res.status(200).json(data);
     } catch (error) {
-        console.error("API-Fehler:", error);
-        res.status(500).json({ error: "Fehler bei der Verarbeitung der Anfrage" });
+        console.error("Fehler bei API-Anfrage:", error);
+        res.status(500).json({ error: "Interner Serverfehler" });
     }
 }
