@@ -7,10 +7,10 @@ async function handler(req, res) {
     }
 
     try {
-        const body = await req.json();
+        const body = req.body;  // ✅ `req.body` statt `req.json()`
         console.log("🔹 Eingehender Body:", body);
 
-        if (!body.messages || !Array.isArray(body.messages)) {
+        if (!body || !body.messages || !Array.isArray(body.messages)) {
             console.error("🔴 Fehler: `messages` fehlt oder ist kein Array:", body);
             return res.status(400).json({ error: "Ungültige Anfrage: `messages` fehlt oder ist kein Array." });
         }
@@ -59,4 +59,4 @@ async function handler(req, res) {
     }
 }
 
-module.exports = handler; // ✅ CommonJS-Export anstelle von `export default`
+module.exports = handler;  // ✅ CommonJS-Export
