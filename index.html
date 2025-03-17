@@ -3,13 +3,49 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ChatGPT Webapp (Kostenlos)</title>
-    <script defer src="script.js"></script>
+    <title>ChatGPT Kostenlos</title>
+    <style>
+        body { font-family: Arial, sans-serif; max-width: 600px; margin: 20px auto; text-align: center; }
+        #chat { margin-top: 20px; text-align: left; }
+        .user, .bot { padding: 10px; margin: 5px 0; border-radius: 5px; }
+        .user { background-color: #d1e7fd; text-align: right; }
+        .bot { background-color: #f3f3f3; text-align: left; }
+    </style>
 </head>
 <body>
-    <h1>ChatGPT Webapp (Kostenlos)</h1>
-    <input id="userInput" type="text" placeholder="Nachricht eingeben...">
+    <h1>ChatGPT Kostenlos</h1>
+    <input id="userInput" type="text" placeholder="Frage stellen..." style="width: 80%; padding: 10px;">
     <button onclick="sendMessage()">Senden</button>
     <div id="chat"></div>
+
+    <script>
+        async function sendMessage() {
+            const input = document.getElementById("userInput");
+            const chat = document.getElementById("chat");
+            if (!input.value.trim()) return;
+
+            // Nutzer-Nachricht anzeigen
+            const userMessage = document.createElement("div");
+            userMessage.textContent = "👤 " + input.value;
+            userMessage.className = "user";
+            chat.appendChild(userMessage);
+
+            const response = await fetch("/api/chat", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ message: input.value })
+            });
+            
+            const data = await response.json();
+
+            // Antwort von ChatGPT anzeigen
+            const botMessage = document.createElement("div");
+            botMessage.textContent = "🤖 " + data.reply;
+            botMessage.className = "bot";
+            chat.appendChild(botMessage);
+            
+            input.value = "";
+        }
+    </script>
 </body>
 </html>
