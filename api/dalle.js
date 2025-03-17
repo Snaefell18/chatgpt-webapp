@@ -13,7 +13,7 @@ async function handler(req, res) {
             return res.status(400).json({ error: "Fehlende Bildbeschreibung!" });
         }
 
-        console.log("🔹 Anfrage an DALL·E:", prompt);
+        console.log("🔹 Anfrage an DALL·E 2:", prompt);
 
         const response = await fetch("https://api.openai.com/v1/images/generations", {
             method: "POST",
@@ -22,15 +22,15 @@ async function handler(req, res) {
                 "Content-Type": "application/json"
             },
             body: JSON.stringify({
-                model: "dall-e-3",
+                model: "dall-e-2",  // ✅ Günstigeres Modell gewählt
                 prompt: prompt,
                 n: 1,
-                size: "1024x1024"
+                size: "512x512" // ✅ Handyfreundliche Bildgröße
             })
         });
 
         const data = await response.json();
-        console.log("🔹 Antwort von DALL·E:", data);
+        console.log("🔹 Antwort von DALL·E 2:", data);
 
         if (!data.data || !data.data.length) {
             return res.status(500).json({ error: "Kein Bild erhalten." });
