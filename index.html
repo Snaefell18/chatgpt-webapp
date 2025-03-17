@@ -69,63 +69,66 @@
             text-align: left;
         }
     </style>
-        <link rel="icon" href="data:,">
 </head>
 <body>
     <div class="logo">EUROGPT – Lernkarten & Chat</div>
-    <input type="file" accept="image/*,.pdf,.txt" id="fileUpload">
-    <button onclick="processFile()">📖 Datei analysieren & Lernkarten erstellen</button>
-    <div class="cards" id="flashcards"></div>
+    <input type="file" accept="image/*" id="imageUpload">
+    <button onclick="processImage()">📸 Bild hochladen</button>
+    <div class="chat" id="chat"></div>
 
     <div class="chat-container">
         <input type="text" id="chatInput" placeholder="ChatGPT fragen...">
         <button onclick="sendChatMessage()">Senden</button>
-        <div class="chat" id="chat"></div>
     </div>
 
-
-
-
     <script>
-        async function sendChatMessage() {
-            const input = document.getElementById("chatInput");
-            const chatBox = document.getElementById("chat");
-            if (!input.value.trim()) return;
+        async function processImage() {
+            const input = document.getElementById("imageUpload");
+            if (!input.files.length) return;
             
-            const userMessage = document.createElement("div");
-            userMessage.textContent = "👤 " + input.value;
-            userMessage.className = "message user-message";
-            chatBox.appendChild(userMessage);
-
-            try {
-                const response = await fetch("/api/chat", {
-                    method: "POST",
-                    headers: { "Content-Type": "application/json" },
-                    body: JSON.stringify({ messages: [{ role: "user", content: input.value }] })
-                });
+            const file = input.files[0];
+            const reader = new FileReader();
+            reader.onload = async function(event) {
+                const base64Image = event.target.result.split(",")[1];
                 
-                if (!response.ok) {
-                    throw new Error(`Fehler: ${response.status} ${response.statusText}`);
+                const chatBox = document.getElementById("chat");
+                const userMessage = document.createElement("div");
+                userMessage.textContent = "📷 Bild wurde hochgeladen...";
+                userMessage.className = "message user-message";
+                chatBox.appendChild(userMessage);
+                
+                try {
+                    const response = await fetch("/api/chat", {
+                        method: "POST",
+                        headers: { "Content-Type": "application/json" },
+                        body: JSON.stringify({
+                            messages: [{ role: "user", content: "Bitte beschreibe oder fasse den Inhalt dieses Bildes zusammen.", image: base64Image }]
+                        })
+                    });
+                    
+                    if (!response.ok) {
+                        throw new Error(`Fehler: ${response.status} ${response.statusText}`);
+                    }
+                    
+                    const data = await response.json();
+                    
+                    const botMessage = document.createElement("div");
+                    if (data.choices && data.choices.length > 0) {
+                        botMessage.textContent = "🤖 " + data.choices[0].message.content;
+                    } else {
+                        botMessage.textContent = "⚠️ Keine Antwort erhalten. Prüfe die API-Route!";
+                    }
+                    botMessage.className = "message bot-message";
+                    chatBox.appendChild(botMessage);
+                } catch (error) {
+                    console.error("ChatGPT-Fehler:", error);
+                    const errorMessage = document.createElement("div");
+                    errorMessage.textContent = "⚠️ Fehler beim Abrufen der Antwort. Prüfe die Konsole!";
+                    errorMessage.className = "message bot-message";
+                    chatBox.appendChild(errorMessage);
                 }
-                
-                const data = await response.json();
-                
-                const botMessage = document.createElement("div");
-                if (data.choices && data.choices.length > 0) {
-                    botMessage.textContent = "🤖 " + data.choices[0].message.content;
-                } else {
-                    botMessage.textContent = "⚠️ Keine Antwort erhalten. Prüfe die API-Route!";
-                }
-                botMessage.className = "message bot-message";
-                chatBox.appendChild(botMessage);
-            } catch (error) {
-                console.error("ChatGPT-Fehler:", error);
-                const errorMessage = document.createElement("div");
-                errorMessage.textContent = "⚠️ Fehler beim Abrufen der Antwort. Prüfe die Konsole!";
-                errorMessage.className = "message bot-message";
-                chatBox.appendChild(errorMessage);
-            }
-            input.value = "";
+            };
+            reader.readAsDataURL(file);
         }
     </script>
 </body>
