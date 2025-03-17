@@ -19,20 +19,20 @@
       display: flex;
       justify-content: center;
     }
-    /* Logo: auf Handy volle Breite, im Browser mind. so breit wie Buttons (320px) */
+    /* Logo: auf Handy volle Breite (100%), max. 320px im Browser */
     .logo img {
-      width: 100%;
+      width: 100%; /* Logo füllt die gesamte Breite */
       max-width: 320px; 
       height: auto;
     }
-    /* Aktienkursbereich: Weiße Box */
+    /* Aktienkursbereich: Gleiche Breite wie Buttons */
     .stock-container {
       background: white;
       padding: 10px;
       border-radius: 8px;
       margin-bottom: 20px;
       display: inline-block;
-      min-width: 320px; /* Mindestens so breit wie Buttons */
+      min-width: 320px; /* Gleiche Breite wie Buttons */
       color: black;
       font-weight: bold;
     }
@@ -108,7 +108,7 @@
 
   <!-- Logo -->
   <div class="logo">
-    <img src="logo.png" alt="EUROChatty Logo">
+    <img src="logo.png" alt="EUROChatty Logo"> <!-- Ersetze 'logo.png' mit deinem Logo-Pfad -->
   </div>
 
   <!-- Aktienkurs von Revvity -->
