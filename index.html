@@ -94,15 +94,16 @@
       max-width: 100%;
       border-radius: 8px;
     }
-    /* Stil für das moderne Eingabefeld */
+    /* Chat-Eingabefeld mit Button untereinander */
     .input-container {
       display: flex;
-      gap: 10px;
+      flex-direction: column;
       align-items: center;
-      justify-content: center;
+      gap: 10px;
+      width: 100%;
     }
     input {
-      flex: 1;
+      width: 90%;
       padding: 12px;
       border: 2px solid #32CD32;
       border-radius: 5px;
@@ -113,19 +114,6 @@
     }
     input::placeholder {
       color: #aaa;
-    }
-    .food-table {
-      width: 100%;
-      border-collapse: collapse;
-      margin-top: 20px;
-    }
-    .food-table th, .food-table td {
-      padding: 10px;
-      border: 1px solid white;
-    }
-    .food-table th {
-      background: #32CD32;
-      color: black;
     }
   </style>
 </head>
