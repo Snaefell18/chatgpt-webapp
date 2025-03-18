@@ -24,7 +24,7 @@
     body.light-mode {
       --background: white;
       --text-color: black;
-      --button-bg: #32CD32; /* grün in beiden Modi */
+      --button-bg: #32CD32; /* in beiden Modi grün */
       --button-text: black;
       --input-bg: #f3f3f3;
       --message-user: #e0f7fa;
@@ -55,9 +55,9 @@
       height: auto;
       transition: border-radius 0.3s ease;
     }
-    /* Im Dark Mode: abgerundete Ecken für das Logo */
+    /* Im Dark Mode: dezentere abgerundete Ecken (5px) */
     body:not(.light-mode) .logo img {
-      border-radius: 20px;
+      border-radius: 5px;
     }
     body.light-mode .logo img {
       border-radius: 0;
@@ -126,6 +126,7 @@
       border-radius: 10px;
       margin: 5px 0;
       font-family: 'Source Sans Pro', sans-serif;
+      text-align: left;
     }
 
     .user-message {
@@ -182,7 +183,7 @@
     <button id="weatherButton" onclick="showSection('weather', this)">🌦 Wetter</button>
   </div>
 
-  <!-- Chat Section -->
+  <!-- Chatty Section -->
   <div id="chatty" class="content">
     <div class="input-container">
       <input type="text" id="chatInput" placeholder="Frage oder 'Bild von ...'">
@@ -198,17 +199,39 @@
     <div id="weatherData">Wird geladen...</div>
   </div>
 
-  <!-- Extra Buttons mit zusätzlichen Funktionen -->
-  <div class="extra-buttons">
-    <button onclick="showInspiration()">💡 Inspire me!</button>
-    <button onclick="showMiniGame()">🎮 Mini Game</button>
+  <!-- Chatty2 Section (nur nach Login sichtbar) -->
+  <div id="chatty2" class="content">
+    <div class="input-container">
+      <input type="text" id="chatInput2" placeholder="Frage oder 'Bild von ...'">
+      <button onclick="sendChatMessage2()">Senden</button>
+      <button onclick="startSpeechRecognition2()">🎤 Spracheingabe</button>
+    </div>
+    <div id="chatBox2"></div>
   </div>
 
-  <!-- Mini Game Section (Click Counter) -->
+  <!-- Extra Buttons -->
+  <div class="extra-buttons">
+    <button id="loginButton" onclick="showLogin()">🔐 Login</button>
+    <button onclick="showInspiration()">💡 Inspire me!</button>
+    <button onclick="showCookieClicker()">🎮 Cookie Clicker</button>
+  </div>
+
+  <!-- Login Section -->
+  <div id="login" class="content">
+    <h3>Login</h3>
+    <div class="input-container">
+      <input type="text" id="username" placeholder="Benutzername">
+      <input type="password" id="password" placeholder="Passwort">
+      <button onclick="login()">Login</button>
+    </div>
+  </div>
+
+  <!-- Cookie Clicker Section -->
   <div id="minigame" class="content">
-    <h3>Mini Game: Klick Zähler</h3>
+    <h3>Cookie Clicker</h3>
     <p>Score: <span id="gameScore">0</span></p>
-    <button onclick="incrementScore()">Klick mich!</button>
+    <!-- Großes, klickbares Cookie -->
+    <div id="cookie" style="font-size: 100px; cursor: pointer;">🍪</div>
     <button onclick="resetGame()">Spiel zurücksetzen</button>
   </div>
 
@@ -241,6 +264,35 @@
       setTimeout(() => {
         document.getElementById(sectionId).classList.add("visible");
       }, 200);
+    }
+
+    // Show Login Section
+    function showLogin() {
+      resetApp();
+      document.getElementById("login").classList.add("visible");
+    }
+
+    // Login Function
+    function login() {
+      const username = document.getElementById("username").value.trim();
+      const password = document.getElementById("password").value.trim();
+      if(username === "jan" && password === "admin") {
+        alert("Login erfolgreich!");
+        localStorage.setItem("loggedIn", "true");
+        document.getElementById("login").classList.remove("visible");
+        // Login-Button ausblenden
+        document.getElementById("loginButton").style.display = "none";
+        // Füge Chatty2-Button hinzu (falls noch nicht vorhanden)
+        if(!document.getElementById("chat2Button")){
+          const chat2Btn = document.createElement("button");
+          chat2Btn.id = "chat2Button";
+          chat2Btn.textContent = "💬 Chatty 2";
+          chat2Btn.onclick = function() { showSection('chatty2', chat2Btn); };
+          document.querySelector(".button-container").appendChild(chat2Btn);
+        }
+      } else {
+        alert("Ungültige Anmeldedaten!");
+      }
     }
 
     // Aktienkurs abrufen
@@ -285,7 +337,7 @@
       document.getElementById("weatherData").innerHTML = weatherHtml;
     }
 
-    // Spracheingabe für den Chat
+    // Spracheingabe für Chatty 1
     function startSpeechRecognition() {
       const recognition = new window.webkitSpeechRecognition();
       recognition.lang = "de-DE";
@@ -295,44 +347,108 @@
       };
     }
 
-    // Chat: Nachricht senden und im LocalStorage speichern
+    // Spracheingabe für Chatty 2
+    function startSpeechRecognition2() {
+      const recognition = new window.webkitSpeechRecognition();
+      recognition.lang = "de-DE";
+      recognition.start();
+      recognition.onresult = (event) => {
+        document.getElementById("chatInput2").value = event.results[0][0].transcript;
+      };
+    }
+
+    // Chatty 1: Nachricht senden und im LocalStorage speichern
     function sendChatMessage() {
       const chatInput = document.getElementById("chatInput");
       const message = chatInput.value.trim();
       if (message === "") return;
       const chatBox = document.getElementById("chatBox");
 
-      // Benutzer-Nachricht erstellen
+      // Benutzer-Nachricht mit Avatar erstellen
       const userMessageDiv = document.createElement("div");
       userMessageDiv.classList.add("message", "user-message");
-      userMessageDiv.textContent = message;
+      userMessageDiv.innerHTML = '<span class="avatar">🥼</span> ' + message;
       chatBox.appendChild(userMessageDiv);
 
-      // Nachricht in LocalStorage speichern
+      // Speichere Nachricht im LocalStorage
       let chatHistory = JSON.parse(localStorage.getItem("chatHistory") || "[]");
       chatHistory.push(message);
       localStorage.setItem("chatHistory", JSON.stringify(chatHistory));
 
-      // Eingabefeld leeren
       chatInput.value = "";
 
-      // Simulierte Bot-Antwort nach kurzer Verzögerung
+      // Simulierte Bot-Antwort
       setTimeout(() => {
-        const botMessageDiv = document.createElement("div");
-        botMessageDiv.classList.add("message", "bot-message");
-        botMessageDiv.textContent = "Bot antwortet: " + message;
-        chatBox.appendChild(botMessageDiv);
+        if(message.toLowerCase().startsWith("bild von")) {
+          const img = document.createElement("img");
+          img.src = "dalle2_placeholder.jpg";
+          img.alt = "DALL-E 2 generiertes Bild";
+          chatBox.appendChild(img);
+        } else {
+          const botMessageDiv = document.createElement("div");
+          botMessageDiv.classList.add("message", "bot-message");
+          botMessageDiv.innerHTML = '<span class="avatar">☀️</span> Bot antwortet: ' + message;
+          chatBox.appendChild(botMessageDiv);
+        }
       }, 500);
     }
 
-    // Lade den Chatverlauf beim Laden der Seite
+    // Lade den Chatverlauf für Chatty 1 beim Laden der Seite
     function loadChatHistory() {
       const chatBox = document.getElementById("chatBox");
       let chatHistory = JSON.parse(localStorage.getItem("chatHistory") || "[]");
       chatHistory.forEach(message => {
         const userMessageDiv = document.createElement("div");
         userMessageDiv.classList.add("message", "user-message");
-        userMessageDiv.textContent = message;
+        userMessageDiv.innerHTML = '<span class="avatar">🥼</span> ' + message;
+        chatBox.appendChild(userMessageDiv);
+      });
+    }
+
+    // Chatty 2: Nachricht senden und im LocalStorage speichern (simuliert GPT-4 und DALL-E 3 HD)
+    function sendChatMessage2() {
+      const chatInput = document.getElementById("chatInput2");
+      const message = chatInput.value.trim();
+      if (message === "") return;
+      const chatBox = document.getElementById("chatBox2");
+
+      // Benutzer-Nachricht mit Avatar erstellen
+      const userMessageDiv = document.createElement("div");
+      userMessageDiv.classList.add("message", "user-message");
+      userMessageDiv.innerHTML = '<span class="avatar">🥼</span> ' + message;
+      chatBox.appendChild(userMessageDiv);
+
+      // Speichere Nachricht im LocalStorage unter chatHistory2
+      let chatHistory = JSON.parse(localStorage.getItem("chatHistory2") || "[]");
+      chatHistory.push(message);
+      localStorage.setItem("chatHistory2", JSON.stringify(chatHistory));
+
+      chatInput.value = "";
+
+      // Simulierte Bot-Antwort für Chatty 2
+      setTimeout(() => {
+        if(message.toLowerCase().startsWith("bild von")) {
+          const img = document.createElement("img");
+          img.src = "dalle3hd_placeholder.jpg";
+          img.alt = "DALL-E 3 HD generiertes Bild";
+          chatBox.appendChild(img);
+        } else {
+          const botMessageDiv = document.createElement("div");
+          botMessageDiv.classList.add("message", "bot-message");
+          botMessageDiv.innerHTML = '<span class="avatar">☀️</span> Chatty2 antwortet (GPT-4): ' + message;
+          chatBox.appendChild(botMessageDiv);
+        }
+      }, 500);
+    }
+
+    // Lade den Chatverlauf für Chatty 2 beim Laden der Seite
+    function loadChatHistory2() {
+      const chatBox = document.getElementById("chatBox2");
+      let chatHistory = JSON.parse(localStorage.getItem("chatHistory2") || "[]");
+      chatHistory.forEach(message => {
+        const userMessageDiv = document.createElement("div");
+        userMessageDiv.classList.add("message", "user-message");
+        userMessageDiv.innerHTML = '<span class="avatar">🥼</span> ' + message;
         chatBox.appendChild(userMessageDiv);
       });
     }
@@ -349,33 +465,43 @@
       alert(randomQuote);
     }
 
-    // Mini Game: Klick-Zähler
+    // Cookie Clicker (Mini Game) – Zählt jeden Klick (unbegrenzt)
     let gameScore = 0;
-    function showMiniGame() {
+    function showCookieClicker() {
       resetApp();
       document.getElementById("minigame").classList.add("visible");
     }
     function incrementScore() {
       gameScore++;
       document.getElementById("gameScore").textContent = gameScore;
-      if (gameScore >= 10) {
-        alert("Glückwunsch! Du hast 10 Klicks erreicht!");
-        resetGame();
-      }
     }
     function resetGame() {
       gameScore = 0;
       document.getElementById("gameScore").textContent = gameScore;
     }
 
-    // Beim Laden der Seite: Aktienkurs, Wetterdaten und Chatverlauf laden sowie Theme setzen
+    // Beim Laden der Seite: Aktienkurs, Wetter, Chatverläufe laden, Theme setzen und Event Listener für Cookie Clicker hinzufügen
     document.addEventListener("DOMContentLoaded", () => {
       fetchStockPrice();
       fetchWeather();
       loadChatHistory();
+      loadChatHistory2();
       const savedTheme = localStorage.getItem("theme");
       if (savedTheme === "light") {
         document.body.classList.add("light-mode");
+      }
+      // Event Listener für Cookie Clicker
+      document.getElementById("cookie").addEventListener("click", incrementScore);
+      // Falls bereits eingeloggt, Login-Button ausblenden und Chatty2-Button hinzufügen
+      if(localStorage.getItem("loggedIn") === "true") {
+        document.getElementById("loginButton").style.display = "none";
+        if(!document.getElementById("chat2Button")){
+          const chat2Btn = document.createElement("button");
+          chat2Btn.id = "chat2Button";
+          chat2Btn.textContent = "💬 Chatty 2";
+          chat2Btn.onclick = function() { showSection('chatty2', chat2Btn); };
+          document.querySelector(".button-container").appendChild(chat2Btn);
+        }
       }
     });
   </script>
