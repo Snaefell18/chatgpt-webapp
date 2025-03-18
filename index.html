@@ -18,6 +18,7 @@
       margin-bottom: 20px;
       display: flex;
       justify-content: center;
+      cursor: pointer;
     }
     .logo img {
       width: 100%;
@@ -30,8 +31,8 @@
       border-radius: 8px;
       margin-bottom: 20px;
       display: inline-block;
-      min-width: 180px;
       max-width: 320px;
+      min-width: 220px;
       color: black;
       font-weight: bold;
     }
@@ -98,7 +99,8 @@
 </head>
 <body>
 
-  <div class="logo">
+  <!-- Logo mit Klick-Funktion zur Startseite -->
+  <div class="logo" onclick="resetApp()">
     <img src="logo.png" alt="EUROChatty Logo">
   </div>
 
@@ -127,14 +129,24 @@
   </div>
 
   <script>
-    function showSection(sectionId, button) {
+    /* -----------------------------------
+       1) Klick auf Logo setzt App zurück
+       ----------------------------------- */
+    function resetApp() {
       document.getElementById("chatty").classList.remove("visible");
       document.getElementById("weather").classList.remove("visible");
       document.querySelectorAll(".button-container button").forEach(btn => btn.classList.remove("active"));
+    }
+
+    function showSection(sectionId, button) {
+      resetApp();
       button.classList.add("active");
       document.getElementById(sectionId).classList.add("visible");
     }
 
+    /* -----------------------------------
+       2) ChatGPT & Bildgenerierung kombiniert
+       ----------------------------------- */
     async function sendChatMessage() {
       const input = document.getElementById("chatInput");
       if (!input.value.trim()) return;
@@ -190,6 +202,9 @@
       input.value = "";
     }
 
+    /* -----------------------------------
+       3) Wetter mit Emojis anzeigen
+       ----------------------------------- */
     async function fetchWeather() {
       const locations = ["Lübeck", "Selmsdorf", "Dassow", "Rennersdorf"];
       let weatherHtml = "";
@@ -198,25 +213,42 @@
         try {
           const response = await fetch(`https://wttr.in/${city}?format=%C+%t`);
           const weatherData = await response.text();
-          weatherHtml += `<p>${city}: ${weatherData}</p>`;
+          const emoji = getWeatherEmoji(weatherData.split(" ")[0]);
+          weatherHtml += `<p>${city}: ${emoji} ${weatherData}</p>`;
         } catch (error) {
-          weatherHtml += `<p>${city}: Fehler beim Laden</p>`;
+          weatherHtml += `<p>${city}: ❓ Fehler beim Laden</p>`;
         }
       }
 
       document.getElementById("weatherData").innerHTML = weatherHtml;
     }
 
+    function getWeatherEmoji(condition) {
+      const weatherIcons = {
+        "Clear": "☀️",
+        "Partly cloudy": "🌤️",
+        "Cloudy": "☁️",
+        "Overcast": "🌥️",
+        "Rain": "🌧️",
+        "Drizzle": "🌦️",
+        "Thunderstorm": "⛈️",
+        "Snow": "❄️",
+        "Fog": "🌫️",
+      };
+      return weatherIcons[condition] || "❓";
+    }
+
+    /* -----------------------------------
+       4) Aktienkurs von Revvity abrufen
+       ----------------------------------- */
     async function fetchStockPrice() {
       const url = "https://www.alphavantage.co/query?function=GLOBAL_QUOTE&symbol=RVTY&apikey=YOUR_API_KEY";
-
       fetch(url)
         .then(res => res.json())
         .then(data => {
           const price = data["Global Quote"]?.["05. price"];
           document.getElementById("revvityPrice").textContent = price ? `RVTY - $${parseFloat(price).toFixed(2)}` : "RVTY - Kurs nicht verfügbar";
-        })
-        .catch(err => document.getElementById("revvityPrice").textContent = "RVTY - Fehler");
+        });
     }
 
     document.addEventListener("DOMContentLoaded", () => {
