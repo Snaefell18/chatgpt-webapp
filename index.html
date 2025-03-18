@@ -24,8 +24,8 @@
     body.light-mode {
       --background: white;
       --text-color: black;
-      --button-bg: #007bff;
-      --button-text: white;
+      --button-bg: #32CD32; /* grün in beiden Modi */
+      --button-text: black;
       --input-bg: #f3f3f3;
       --message-user: #e0f7fa;
       --message-bot: #c8e6c9;
@@ -53,47 +53,59 @@
       width: 100%;
       max-width: 320px;
       height: auto;
+      transition: border-radius 0.3s ease;
+    }
+    /* Im Dark Mode: abgerundete Ecken für das Logo */
+    body:not(.light-mode) .logo img {
+      border-radius: 20px;
+    }
+    body.light-mode .logo img {
+      border-radius: 0;
     }
 
     .toggle-container {
-      text-align: right;
-      margin-bottom: 10px;
+      text-align: center;
+      margin-top: 20px;
     }
 
-    .toggle-container button {
-      background: var(--button-bg);
-      color: var(--button-text);
-      padding: 10px;
-      border: none;
-      border-radius: 5px;
-      cursor: pointer;
-    }
-
-    .button-container {
+    .button-container, .extra-buttons {
       display: flex;
       flex-direction: column;
       gap: 15px;
-      margin-top: 20px;
+      margin: 20px auto;
       width: 100%;
       max-width: 320px;
-      margin: 20px auto;
     }
 
     button {
       padding: 12px;
       border: none;
-      border-radius: 5px;
+      border-radius: 10px;
       font-size: 1rem;
       cursor: pointer;
       font-weight: bold;
       color: var(--button-text);
       background: var(--button-bg);
-      transition: background-color 0.3s, transform 0.2s ease;
+      transition: background-color 0.3s, transform 0.2s ease, box-shadow 0.3s;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.2);
     }
 
     button:hover {
       background-color: #228b22;
       transform: scale(1.05);
+      box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+    }
+
+    .stock-container {
+      background: white;
+      padding: 10px;
+      border-radius: 8px;
+      margin-bottom: 20px;
+      display: inline-block;
+      width: 90%;
+      max-width: 280px; /* etwas kleiner als das Logo */
+      color: black;
+      font-weight: bold;
     }
 
     .content {
@@ -111,7 +123,7 @@
 
     .message {
       padding: 10px;
-      border-radius: 5px;
+      border-radius: 10px;
       margin: 5px 0;
       font-family: 'Source Sans Pro', sans-serif;
     }
@@ -140,35 +152,22 @@
       width: 90%;
       padding: 12px;
       border: 2px solid var(--button-bg);
-      border-radius: 5px;
+      border-radius: 10px;
       font-size: 1rem;
       background: var(--input-bg);
       color: var(--text-color);
       outline: none;
+      transition: border 0.3s;
     }
 
     input::placeholder {
       color: #aaa;
     }
-
-    .stock-container {
-      background: white;
-      padding: 10px;
-      border-radius: 8px;
-      margin-bottom: 20px;
-      display: inline-block;
-      width: 90%;
-      color: black;
-      font-weight: bold;
-    }
   </style>
 </head>
 <body>
 
-  <div class="toggle-container">
-    <button onclick="toggleTheme()">🌙 / ☀️</button>
-  </div>
-
+  <!-- Logo & Aktienkurs -->
   <div class="logo" onclick="resetApp()">
     <img src="logo.png" alt="EUROChatty Logo">
   </div>
@@ -177,11 +176,13 @@
     <div id="revvityPrice">RVTY - Wird geladen...</div>
   </div>
 
+  <!-- Hauptbuttons -->
   <div class="button-container">
     <button id="chatButton" onclick="showSection('chatty', this)">💬 Chatty</button>
     <button id="weatherButton" onclick="showSection('weather', this)">🌦 Wetter</button>
   </div>
 
+  <!-- Chat Section -->
   <div id="chatty" class="content">
     <div class="input-container">
       <input type="text" id="chatInput" placeholder="Frage oder 'Bild von ...'">
@@ -191,32 +192,58 @@
     <div id="chatBox"></div>
   </div>
 
+  <!-- Wetter Section -->
   <div id="weather" class="content">
     <h3>Wetter</h3>
     <div id="weatherData">Wird geladen...</div>
   </div>
 
+  <!-- Extra Buttons mit zusätzlichen Funktionen -->
+  <div class="extra-buttons">
+    <button onclick="showInspiration()">💡 Inspire me!</button>
+    <button onclick="showMiniGame()">🎮 Mini Game</button>
+  </div>
+
+  <!-- Mini Game Section (Click Counter) -->
+  <div id="minigame" class="content">
+    <h3>Mini Game: Klick Zähler</h3>
+    <p>Score: <span id="gameScore">0</span></p>
+    <button onclick="incrementScore()">Klick mich!</button>
+    <button onclick="resetGame()">Spiel zurücksetzen</button>
+  </div>
+
+  <!-- Toggle Theme Button am unteren Seitenende -->
+  <div class="toggle-container">
+    <button onclick="toggleTheme()">🌙 / ☀️</button>
+  </div>
+
   <script>
+    // Theme Toggle Function
     function toggleTheme() {
       document.body.classList.toggle("light-mode");
       localStorage.setItem("theme", document.body.classList.contains("light-mode") ? "light" : "dark");
     }
 
+    // Reset App Function: blendet alle Content-Bereiche aus und entfernt aktive Zustände
     function resetApp() {
       document.querySelectorAll(".content").forEach(section => {
         section.classList.remove("visible");
       });
-      document.querySelectorAll(".button-container button").forEach(btn => btn.classList.remove("active"));
+      document.querySelectorAll(".button-container button, .extra-buttons button").forEach(btn => btn.classList.remove("active"));
     }
 
+    // Zeige einen bestimmten Abschnitt an
     function showSection(sectionId, button) {
       resetApp();
-      button.classList.add("active");
+      if(button) {
+        button.classList.add("active");
+      }
       setTimeout(() => {
         document.getElementById(sectionId).classList.add("visible");
       }, 200);
     }
 
+    // Aktienkurs abrufen
     async function fetchStockPrice() {
       const url = "https://www.alphavantage.co/query?function=GLOBAL_QUOTE&symbol=RVTY&apikey=YOUR_API_KEY";
       fetch(url)
@@ -227,6 +254,18 @@
         });
     }
 
+    // Helfer: Bestimme ein Wetter-Emoji anhand der Beschreibung
+    function getWeatherEmoji(description) {
+      description = description.toLowerCase();
+      if (description.includes("clear") || description.includes("sonnig") || description.includes("sunny")) return "☀️";
+      if (description.includes("cloud") || description.includes("wolkig")) return "☁️";
+      if (description.includes("rain") || description.includes("regen")) return "🌧️";
+      if (description.includes("snow") || description.includes("schnee")) return "❄️";
+      if (description.includes("mist") || description.includes("nebel")) return "🌫️";
+      return "";
+    }
+
+    // Wetterdaten abrufen und für jeden Standort ein Symbol anzeigen
     async function fetchWeather() {
       const locations = ["Lübeck", "Selmsdorf", "Dassow", "Rennersdorf"];
       let weatherHtml = "";
@@ -235,7 +274,9 @@
         try {
           const response = await fetch(`https://wttr.in/${city}?format=%C+%t`);
           const weatherData = await response.text();
-          weatherHtml += `<p>${city}: ${weatherData}</p>`;
+          const condition = weatherData.split(" ")[0];
+          const emoji = getWeatherEmoji(condition);
+          weatherHtml += `<p>${city}: ${weatherData} ${emoji}</p>`;
         } catch (error) {
           weatherHtml += `<p>${city}: ❓ Fehler beim Laden</p>`;
         }
@@ -244,6 +285,7 @@
       document.getElementById("weatherData").innerHTML = weatherHtml;
     }
 
+    // Spracheingabe für den Chat
     function startSpeechRecognition() {
       const recognition = new window.webkitSpeechRecognition();
       recognition.lang = "de-DE";
@@ -253,8 +295,94 @@
       };
     }
 
-    document.addEventListener("DOMContentLoaded", () => { fetchStockPrice(); fetchWeather(); });
+    // Chat: Nachricht senden und im LocalStorage speichern
+    function sendChatMessage() {
+      const chatInput = document.getElementById("chatInput");
+      const message = chatInput.value.trim();
+      if (message === "") return;
+      const chatBox = document.getElementById("chatBox");
+
+      // Benutzer-Nachricht erstellen
+      const userMessageDiv = document.createElement("div");
+      userMessageDiv.classList.add("message", "user-message");
+      userMessageDiv.textContent = message;
+      chatBox.appendChild(userMessageDiv);
+
+      // Nachricht in LocalStorage speichern
+      let chatHistory = JSON.parse(localStorage.getItem("chatHistory") || "[]");
+      chatHistory.push(message);
+      localStorage.setItem("chatHistory", JSON.stringify(chatHistory));
+
+      // Eingabefeld leeren
+      chatInput.value = "";
+
+      // Simulierte Bot-Antwort nach kurzer Verzögerung
+      setTimeout(() => {
+        const botMessageDiv = document.createElement("div");
+        botMessageDiv.classList.add("message", "bot-message");
+        botMessageDiv.textContent = "Bot antwortet: " + message;
+        chatBox.appendChild(botMessageDiv);
+      }, 500);
+    }
+
+    // Lade den Chatverlauf beim Laden der Seite
+    function loadChatHistory() {
+      const chatBox = document.getElementById("chatBox");
+      let chatHistory = JSON.parse(localStorage.getItem("chatHistory") || "[]");
+      chatHistory.forEach(message => {
+        const userMessageDiv = document.createElement("div");
+        userMessageDiv.classList.add("message", "user-message");
+        userMessageDiv.textContent = message;
+        chatBox.appendChild(userMessageDiv);
+      });
+    }
+
+    // "Inspire me!" Funktion: Zeige einen zufälligen motivierenden Spruch
+    function showInspiration() {
+      const quotes = [
+        "Der einzige Weg, großartige Arbeit zu leisten, ist zu lieben, was man tut. – Steve Jobs",
+        "Erfolg ist nicht der Schlüssel zum Glück. Glück ist der Schlüssel zum Erfolg.",
+        "Sei du selbst die Veränderung, die du dir wünschst für diese Welt.",
+        "Die Zukunft gehört denen, die an die Schönheit ihrer Träume glauben."
+      ];
+      const randomQuote = quotes[Math.floor(Math.random() * quotes.length)];
+      alert(randomQuote);
+    }
+
+    // Mini Game: Klick-Zähler
+    let gameScore = 0;
+    function showMiniGame() {
+      resetApp();
+      document.getElementById("minigame").classList.add("visible");
+    }
+    function incrementScore() {
+      gameScore++;
+      document.getElementById("gameScore").textContent = gameScore;
+      if (gameScore >= 10) {
+        alert("Glückwunsch! Du hast 10 Klicks erreicht!");
+        resetGame();
+      }
+    }
+    function resetGame() {
+      gameScore = 0;
+      document.getElementById("gameScore").textContent = gameScore;
+    }
+
+    // Beim Laden der Seite: Aktienkurs, Wetterdaten und Chatverlauf laden sowie Theme setzen
+    document.addEventListener("DOMContentLoaded", () => {
+      fetchStockPrice();
+      fetchWeather();
+      loadChatHistory();
+      const savedTheme = localStorage.getItem("theme");
+      if (savedTheme === "light") {
+        document.body.classList.add("light-mode");
+      }
+    });
   </script>
+
+  <!-- Externe Skripte (z. B. chat.js) -->
+  <script src="chat.js"></script>
+  <!-- Weitere externe Skripte können hier eingebunden werden -->
 
 </body>
 </html>
