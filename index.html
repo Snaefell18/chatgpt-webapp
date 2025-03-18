@@ -1,9 +1,9 @@
 <!DOCTYPE html>
 <html lang="de">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>EUROChatty & EURODall-E</title>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>EUROChatty</title>
   <style>
     body {
       font-family: Arial, sans-serif;
@@ -19,29 +19,20 @@
       display: flex;
       justify-content: center;
     }
-    /* Logo: auf Handy volle Breite (100%), max. 320px im Browser */
     .logo img {
-      width: 100%; /* Logo füllt die gesamte Breite */
-      max-width: 320px; 
+      width: 100%;
+      max-width: 320px;
       height: auto;
     }
-    /* Aktienkursbereich: Gleiche Breite wie Buttons */
     .stock-container {
       background: white;
       padding: 10px;
       border-radius: 8px;
       margin-bottom: 20px;
       display: inline-block;
-      min-width: 320px; /* Gleiche Breite wie Buttons */
+      min-width: 320px;
       color: black;
       font-weight: bold;
-    }
-    .stock-container h3 {
-      margin: 0;
-      font-size: 1.1rem;
-    }
-    .stock-price {
-      font-size: 1.2rem;
     }
     .button-container {
       display: flex;
@@ -65,7 +56,7 @@
       transition: background-color 0.3s;
     }
     button.active {
-      background-color: #28a428; /* Hellt grüner, wenn aktiv */
+      background-color: #28a428;
     }
     button:hover {
       background-color: #228b22;
@@ -106,175 +97,131 @@
 </head>
 <body>
 
-  <!-- Logo -->
   <div class="logo">
-    <img src="logo.png" alt="EUROChatty Logo"> <!-- Ersetze 'logo.png' mit deinem Logo-Pfad -->
+    <img src="logo.png" alt="EUROChatty Logo">
   </div>
 
-  <!-- Aktienkurs von Revvity -->
+  <!-- Aktienkurs -->
   <div class="stock-container">
-    <h3>Aktienkurs von Revvity (RVTY)</h3>
-    <div class="stock-price" id="revvityPrice">Wird geladen...</div>
+    <div id="revvityPrice">RVTY - Wird geladen...</div>
   </div>
 
-  <!-- Buttons für EUROChatty & EURODall-E -->
+  <!-- Buttons für Chatty & Wetter -->
   <div class="button-container">
-    <button id="chatButton" onclick="showSection('eurochatty', this)">EUROChatty</button>
-    <button id="dalleButton" onclick="showSection('eurodalle', this)">EURODall-E</button>
+    <button id="chatButton" onclick="showSection('chatty', this)">Chatty</button>
+    <button id="weatherButton" onclick="showSection('weather', this)">Wetter</button>
   </div>
 
-  <!-- Bereich für EUROChatty (Chat) -->
-  <div id="eurochatty" class="content">
-    <input type="text" id="chatInput" placeholder="Deine Nachricht...">
+  <!-- Chatty: Chat + Bildgenerierung -->
+  <div id="chatty" class="content">
+    <input type="text" id="chatInput" placeholder="Nachricht oder 'Bild von ...'">
     <button onclick="sendChatMessage()">Senden</button>
     <div id="chatBox"></div>
   </div>
 
-  <!-- Bereich für EURODall-E (Bildgenerierung) -->
-  <div id="eurodalle" class="content">
-    <input type="text" id="imagePrompt" placeholder="Bildbeschreibung eingeben...">
-    <button onclick="generateImage()">Generieren</button>
-    <div id="imageBox"></div>
+  <!-- Wetteranzeige -->
+  <div id="weather" class="content">
+    <h3>Wetter</h3>
+    <div id="weatherData">Wird geladen...</div>
   </div>
 
   <script>
-    /* -------------------------
-       1) Navigation: Zeige/Verstecke Bereiche & Highlight Button
-       ------------------------- */
     function showSection(sectionId, button) {
-      // Verstecke beide Bereiche
-      document.getElementById("eurochatty").classList.remove("visible");
-      document.getElementById("eurodalle").classList.remove("visible");
-      // Entferne die aktive Klasse von allen Buttons
+      document.getElementById("chatty").classList.remove("visible");
+      document.getElementById("weather").classList.remove("visible");
       document.querySelectorAll(".button-container button").forEach(btn => btn.classList.remove("active"));
-      // Füge die aktive Klasse zum geklickten Button hinzu
       button.classList.add("active");
-      // Zeige den angeforderten Bereich
       document.getElementById(sectionId).classList.add("visible");
-    }
-
-    /* -------------------------
-       2) Aktienkurs von Revvity laden
-       ------------------------- */
-    document.addEventListener("DOMContentLoaded", fetchStockPrice);
-
-    function fetchStockPrice() {
-      // API-URL für Revvity Aktie (Platzhalter für echte API)
-      const url = "https://www.alphavantage.co/query?function=GLOBAL_QUOTE&symbol=RVTY&apikey=YOUR_API_KEY";
-
-      fetch(url)
-        .then(res => res.json())
-        .then(data => {
-          const price = data["Global Quote"]?.["05. price"];
-          if (price) {
-            document.getElementById("revvityPrice").textContent = `$${parseFloat(price).toFixed(2)}`;
-          } else {
-            document.getElementById("revvityPrice").textContent = "Kurs nicht verfügbar";
-          }
-        })
-        .catch(err => {
-          console.error("Fehler beim Laden des Aktienkurses:", err);
-          document.getElementById("revvityPrice").textContent = "Fehler beim Laden";
-        });
-    }
-
-    /* -------------------------
-       3) Chat-Funktion (EUROChatty)
-       ------------------------- */
-    let chatHistory = [];
-
-    function renderChat() {
-      const chatBox = document.getElementById("chatBox");
-      chatBox.innerHTML = "";
-      chatHistory.forEach(msg => {
-        const div = document.createElement("div");
-        div.textContent = (msg.role === "user" ? "👤 " : "🤖 ") + msg.content;
-        div.className = "message " + (msg.role === "user" ? "user-message" : "bot-message");
-        chatBox.appendChild(div);
-      });
     }
 
     async function sendChatMessage() {
       const input = document.getElementById("chatInput");
       if (!input.value.trim()) return;
 
-      const userMsg = { role: "user", content: input.value };
-      chatHistory.push(userMsg);
-      renderChat();
+      const chatBox = document.getElementById("chatBox");
+      const userMessage = document.createElement("div");
+      userMessage.textContent = "👤 " + input.value;
+      userMessage.className = "message user-message";
+      chatBox.appendChild(userMessage);
 
-      try {
-        const response = await fetch("/api/chat.js", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ messages: chatHistory })
-        });
+      if (input.value.toLowerCase().startsWith("bild von")) {
+        try {
+          const response = await fetch("/api/dalle.js", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ prompt: input.value })
+          });
 
-        if (!response.ok) {
-          throw new Error(`Fehler: ${response.status} ${response.statusText}`);
+          if (!response.ok) {
+            throw new Error(`Fehler: ${response.status} ${response.statusText}`);
+          }
+
+          const data = await response.json();
+          const botMessage = document.createElement("div");
+          botMessage.innerHTML = `<img src="${data.imageUrl}" alt="Generiertes Bild">`;
+          botMessage.className = "message bot-message";
+          chatBox.appendChild(botMessage);
+        } catch (error) {
+          console.error("DALL·E-Fehler:", error);
         }
+      } else {
+        try {
+          const response = await fetch("/api/chat.js", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ messages: [{ role: "user", content: input.value }] })
+          });
 
-        const data = await response.json();
-        const botContent = data.choices[0]?.message?.content || "⚠️ Keine Antwort erhalten.";
-        const botMsg = { role: "assistant", content: botContent };
-        chatHistory.push(botMsg);
-        renderChat();
-      } catch (error) {
-        console.error("ChatGPT-Fehler:", error);
+          if (!response.ok) {
+            throw new Error(`Fehler: ${response.status} ${response.statusText}`);
+          }
+
+          const data = await response.json();
+          const botMessage = document.createElement("div");
+          botMessage.textContent = "🤖 " + (data.choices[0]?.message?.content || "⚠️ Keine Antwort erhalten.");
+          botMessage.className = "message bot-message";
+          chatBox.appendChild(botMessage);
+        } catch (error) {
+          console.error("ChatGPT-Fehler:", error);
+        }
       }
 
       input.value = "";
     }
 
-    /* -------------------------
-       4) Bildgenerierung (EURODall-E)
-       ------------------------- */
-    let dalleHistory = [];
+    async function fetchWeather() {
+      const locations = ["Lübeck", "Selmsdorf", "Dassow", "Rennersdorf"];
+      let weatherHtml = "";
 
-    function renderDalle() {
-      const imageBox = document.getElementById("imageBox");
-      imageBox.innerHTML = "";
-      dalleHistory.forEach(item => {
-        const div = document.createElement("div");
-        if (item.role === "user") {
-          div.textContent = "🎨 " + item.content;
-          div.className = "message user-message";
-        } else {
-          div.innerHTML = `<img src="${item.imageUrl}" alt="Generiertes Bild">`;
-          div.className = "message bot-message";
+      for (let city of locations) {
+        try {
+          const response = await fetch(`https://wttr.in/${city}?format=%C+%t`);
+          const weatherData = await response.text();
+          weatherHtml += `<p>${city}: ${weatherData}</p>`;
+        } catch (error) {
+          weatherHtml += `<p>${city}: Fehler beim Laden</p>`;
         }
-        imageBox.appendChild(div);
-      });
-    }
-
-    async function generateImage() {
-      const promptInput = document.getElementById("imagePrompt");
-      if (!promptInput.value.trim()) return;
-
-      const userItem = { role: "user", content: promptInput.value };
-      dalleHistory.push(userItem);
-      renderDalle();
-
-      try {
-        const response = await fetch("/api/dalle.js", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ prompt: promptInput.value })
-        });
-
-        if (!response.ok) {
-          throw new Error(`Fehler: ${response.status} ${response.statusText}`);
-        }
-
-        const data = await response.json();
-        const botItem = { role: "assistant", imageUrl: data.imageUrl };
-        dalleHistory.push(botItem);
-        renderDalle();
-      } catch (error) {
-        console.error("DALL·E-Fehler:", error);
       }
 
-      promptInput.value = "";
+      document.getElementById("weatherData").innerHTML = weatherHtml;
     }
+
+    async function fetchStockPrice() {
+      const url = "https://www.alphavantage.co/query?function=GLOBAL_QUOTE&symbol=RVTY&apikey=YOUR_API_KEY";
+
+      fetch(url)
+        .then(res => res.json())
+        .then(data => {
+          const price = data["Global Quote"]?.["05. price"];
+          document.getElementById("revvityPrice").textContent = price ? `RVTY - $${parseFloat(price).toFixed(2)}` : "RVTY - Kurs nicht verfügbar";
+        })
+        .catch(err => document.getElementById("revvityPrice").textContent = "RVTY - Fehler");
+    }
+
+    document.addEventListener("DOMContentLoaded", () => {
+      fetchStockPrice();
+      fetchWeather();
+    });
   </script>
 
 </body>
