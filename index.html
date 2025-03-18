@@ -11,37 +11,65 @@
   <link href="https://fonts.googleapis.com/css2?family=Source+Sans+Pro:wght@300;400;600&display=swap" rel="stylesheet">
 
   <style>
-    /* Anwenden der neuen Schrift */
+    /* Dark & Light Mode Variablen */
+    :root {
+      --background: #1e1e2f;
+      --text-color: white;
+      --button-bg: #32CD32;
+      --button-text: black;
+      --input-bg: #2a2a3b;
+      --message-user: white;
+      --message-bot: #d1d1d1;
+    }
+
+    body.light-mode {
+      --background: white;
+      --text-color: black;
+      --button-bg: #007bff;
+      --button-text: white;
+      --input-bg: #f3f3f3;
+      --message-user: #e0f7fa;
+      --message-bot: #c8e6c9;
+    }
+
     body {
       font-family: 'Source Sans Pro', sans-serif;
-      background: #1e1e2f;
-      color: white;
+      background: var(--background);
+      color: var(--text-color);
       max-width: 600px;
       margin: 20px auto;
       text-align: center;
       padding: 20px;
+      transition: background 0.3s ease, color 0.3s ease;
     }
+
     .logo {
       margin-bottom: 20px;
       display: flex;
       justify-content: center;
       cursor: pointer;
     }
+
     .logo img {
       width: 100%;
       max-width: 320px;
       height: auto;
     }
-    .stock-container {
-      background: white;
-      padding: 10px;
-      border-radius: 8px;
-      margin-bottom: 20px;
-      display: inline-block;
-      width: 90%;
-      color: black;
-      font-weight: bold;
+
+    .toggle-container {
+      text-align: right;
+      margin-bottom: 10px;
     }
+
+    .toggle-container button {
+      background: var(--button-bg);
+      color: var(--button-text);
+      padding: 10px;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+    }
+
     .button-container {
       display: flex;
       flex-direction: column;
@@ -51,6 +79,7 @@
       max-width: 320px;
       margin: 20px auto;
     }
+
     button {
       padding: 12px;
       border: none;
@@ -58,45 +87,48 @@
       font-size: 1rem;
       cursor: pointer;
       font-weight: bold;
-      color: black;
-      background: #32CD32;
-      font-family: 'Source Sans Pro', sans-serif;
+      color: var(--button-text);
+      background: var(--button-bg);
       transition: background-color 0.3s, transform 0.2s ease;
     }
-    button.active {
-      background-color: #28a428;
-    }
+
     button:hover {
       background-color: #228b22;
       transform: scale(1.05);
     }
+
     .content {
       display: none;
       opacity: 0;
       transform: translateY(20px);
       transition: opacity 0.4s ease, transform 0.4s ease;
     }
+
     .visible {
       display: block;
       opacity: 1;
       transform: translateY(0);
     }
+
     .message {
       padding: 10px;
       border-radius: 5px;
       margin: 5px 0;
       font-family: 'Source Sans Pro', sans-serif;
     }
+
     .user-message {
-      background: white;
+      background: var(--message-user);
       color: black;
       text-align: right;
     }
+
     .bot-message {
-      background: #d1d1d1;
+      background: var(--message-bot);
       color: black;
       text-align: left;
     }
+
     .input-container {
       display: flex;
       flex-direction: column;
@@ -104,67 +136,55 @@
       gap: 10px;
       width: 100%;
     }
+
     input {
       width: 90%;
       padding: 12px;
-      border: 2px solid #32CD32;
+      border: 2px solid var(--button-bg);
       border-radius: 5px;
       font-size: 1rem;
-      background: #2a2a3b;
-      color: white;
+      background: var(--input-bg);
+      color: var(--text-color);
       outline: none;
-      font-family: 'Source Sans Pro', sans-serif;
     }
+
     input::placeholder {
       color: #aaa;
-    }
-    .food-table {
-      width: 90%;
-      border-collapse: collapse;
-      margin: 20px auto;
-      font-family: 'Source Sans Pro', sans-serif;
-    }
-    .food-table th, .food-table td {
-      padding: 10px;
-      border: 1px solid white;
-    }
-    .food-table th {
-      background: #32CD32;
-      color: black;
     }
   </style>
 </head>
 <body>
 
-  <div class="logo" onclick="resetApp()">
-    <img src="logo.png" alt="EUROChatty Logo">
+  <!-- Toggle für Dark/Light Mode -->
+  <div class="toggle-container">
+    <button onclick="toggleTheme()">🌙 / ☀️</button>
   </div>
 
-  <div class="stock-container">
-    <div id="revvityPrice">RVTY - Wird geladen...</div>
+  <div class="logo" onclick="resetApp()">
+    <img src="logo.png" alt="EUROChatty Logo">
   </div>
 
   <!-- Buttons untereinander -->
   <div class="button-container">
     <button id="chatButton" onclick="showSection('chatty', this)">💬 Chatty</button>
     <button id="weatherButton" onclick="showSection('weather', this)">🌦 Wetter</button>
-    <button id="foodButton" onclick="showSection('food', this)">🍽 Mittagessen</button>
   </div>
 
   <div id="chatty" class="content">
     <div class="input-container">
       <input type="text" id="chatInput" placeholder="Frage oder 'Bild von ...'">
       <button onclick="sendChatMessage()">Senden</button>
+      <button onclick="startSpeechRecognition()">🎤 Spracheingabe</button>
     </div>
     <div id="chatBox"></div>
   </div>
 
-  <div id="weather" class="content">
-    <h3>Wetter</h3>
-    <div id="weatherData">Wird geladen...</div>
-  </div>
-
   <script>
+    function toggleTheme() {
+      document.body.classList.toggle("light-mode");
+      localStorage.setItem("theme", document.body.classList.contains("light-mode") ? "light" : "dark");
+    }
+
     function resetApp() {
       document.querySelectorAll(".content").forEach(section => {
         section.classList.remove("visible");
@@ -209,34 +229,21 @@
       input.value = "";
     }
 
-    async function fetchStockPrice() {
-      const url = "https://www.alphavantage.co/query?function=GLOBAL_QUOTE&symbol=RVTY&apikey=YOUR_API_KEY";
-      fetch(url)
-        .then(res => res.json())
-        .then(data => {
-          const price = data["Global Quote"]?.["05. price"];
-          document.getElementById("revvityPrice").textContent = price ? `RVTY - $${parseFloat(price).toFixed(2)}` : "RVTY - Kurs nicht verfügbar";
-        });
+    function startSpeechRecognition() {
+      const recognition = new window.webkitSpeechRecognition();
+      recognition.lang = "de-DE";
+      recognition.start();
+      recognition.onresult = (event) => {
+        document.getElementById("chatInput").value = event.results[0][0].transcript;
+      };
     }
 
-    async function fetchWeather() {
-      const locations = ["Lübeck", "Selmsdorf", "Dassow", "Rennersdorf"];
-      let weatherHtml = "";
-
-      for (let city of locations) {
-        try {
-          const response = await fetch(`https://wttr.in/${city}?format=%C+%t`);
-          const weatherData = await response.text();
-          weatherHtml += `<p>${city}: ${weatherData}</p>`;
-        } catch (error) {
-          weatherHtml += `<p>${city}: ❓ Fehler beim Laden</p>`;
-        }
+    document.addEventListener("DOMContentLoaded", () => {
+      const savedTheme = localStorage.getItem("theme");
+      if (savedTheme === "light") {
+        document.body.classList.add("light-mode");
       }
-
-      document.getElementById("weatherData").innerHTML = weatherHtml;
-    }
-
-    document.addEventListener("DOMContentLoaded", () => { fetchStockPrice(); fetchWeather(); });
+    });
   </script>
 
 </body>
