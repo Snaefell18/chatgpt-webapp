@@ -9,7 +9,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Source+Sans+Pro:wght@300;400;600&display=swap" rel="stylesheet">
-
+  
   <style>
     :root {
       --background: #1e1e2f;
@@ -23,7 +23,7 @@
     body.light-mode {
       --background: white;
       --text-color: black;
-      --button-bg: #32CD32; /* in beiden Modi grün */
+      --button-bg: #32CD32;
       --button-text: black;
       --input-bg: #f3f3f3;
       --message-user: #e0f7fa;
@@ -58,7 +58,7 @@
     body.light-mode .logo img {
       border-radius: 0;
     }
-    /* Zurück-Button: unter dem Aktienkurs */
+    /* Zurück-Button (unter dem Aktienkurs) */
     #backButtonContainer {
       display: none;
       margin-bottom: 20px;
@@ -66,6 +66,9 @@
     .toggle-container {
       text-align: center;
       margin-top: 20px;
+      display: flex;
+      justify-content: center;
+      gap: 10px;
     }
     .button-container, .extra-buttons {
       display: flex;
@@ -99,7 +102,7 @@
       margin-bottom: 20px;
       display: inline-block;
       width: 90%;
-      max-width: 280px; /* etwas kleiner als das Logo */
+      max-width: 280px;
       color: black;
       font-weight: bold;
     }
@@ -177,9 +180,9 @@
     <button id="weatherButton" onclick="showSection('weather', this)">🌦 Wetter</button>
   </div>
   <div class="extra-buttons">
-    <button id="loginButton" onclick="showLogin()">🔐 Login</button>
     <button onclick="showInspiration()">💡 Inspire me!</button>
-    <button onclick="showCookieClicker()">🎮 Cookie Clicker</button>
+    <button onclick="showCookieClicker()">🍪 Cookie Clicker</button>
+    <button id="loginButton" onclick="showLogin()">🔐 Login</button>
     <button id="settingsButton" onclick="showSettings()">⚙️ Einstellungen</button>
   </div>
 
@@ -199,7 +202,7 @@
     <div id="weatherData">Wird geladen...</div>
   </div>
 
-  <!-- Chatty 2 Section (wird nach Login verfügbar) -->
+  <!-- Chatty Pro Section (früher Chatty 2 – wird nach Login verfügbar) -->
   <div id="chatty2" class="content">
     <div class="input-container">
       <input type="text" id="chatInput2" placeholder="Frage oder 'BILD VON ...'">
@@ -232,6 +235,22 @@
     </div>
   </div>
 
+  <!-- Krankmeldung Section -->
+  <div id="krankmeldung" class="content">
+    <h3>Krankmeldung</h3>
+    <div class="input-container">
+      <label>Von: <input type="date" id="krankVon"></label>
+      <label>Bis: <input type="date" id="krankBis"></label>
+      <label>Dokument:
+        <select id="krankDokument">
+          <option value="Abwesenheitsbogen">Abwesenheitsbogen</option>
+          <option value="Attest">Attest</option>
+        </select>
+      </label>
+      <button onclick="createSickMail()">Mail erstellen</button>
+    </div>
+  </div>
+
   <!-- Cookie Clicker (Mini Game) -->
   <div id="minigame" class="content">
     <h3>Cookie Clicker</h3>
@@ -241,9 +260,10 @@
     <button onclick="resetGame()">Spiel zurücksetzen</button>
   </div>
 
-  <!-- Toggle Theme Button -->
+  <!-- Toggle Container: enthält den Hell-/Dunkelmodus-Button und den Krankmeldung-Button -->
   <div class="toggle-container">
     <button onclick="toggleTheme()">🌙 / ☀️</button>
+    <button onclick="showKrankmeldung()">👩‍⚕️</button>
   </div>
 
   <script>
@@ -254,23 +274,19 @@
     }
     // Reset App: Blendet alle Content-Bereiche aus und entfernt aktive Zustände
     function resetApp() {
-      document.querySelectorAll(".content").forEach(section => {
-        section.classList.remove("visible");
-      });
+      document.querySelectorAll(".content").forEach(section => { section.classList.remove("visible"); });
       document.querySelectorAll(".button-container button, .extra-buttons button").forEach(btn => btn.classList.remove("active"));
     }
-    // Zeige einen bestimmten Abschnitt an – dabei werden die Hauptbuttons ausgeblendet und der Zurück-Button eingeblendet
+    // Zeige einen bestimmten Abschnitt an – Hauptbuttons ausblenden, Zurück-Button einblenden
     function showSection(sectionId, button) {
       resetApp();
       document.querySelector(".button-container").style.display = "none";
       document.querySelector(".extra-buttons").style.display = "none";
       document.getElementById("backButtonContainer").style.display = "block";
       if (button) { button.classList.add("active"); }
-      setTimeout(() => {
-        document.getElementById(sectionId).classList.add("visible");
-      }, 200);
+      setTimeout(() => { document.getElementById(sectionId).classList.add("visible"); }, 200);
     }
-    // Gehe zurück zur Hauptübersicht: Funktionsbereiche ausblenden und Hauptbuttons wieder einblenden
+    // Zurück zur Hauptübersicht
     function goBack() {
       resetApp();
       document.querySelector(".button-container").style.display = "flex";
@@ -292,11 +308,16 @@
       document.querySelector(".button-container").style.display = "none";
       document.querySelector(".extra-buttons").style.display = "none";
       document.getElementById("backButtonContainer").style.display = "block";
-      // Vorbelegung: falls ein Arbeitsort bereits gewählt wurde, setze diesen
       const selected = localStorage.getItem("selectedLocation") || "Lübeck";
-      document.querySelectorAll("input[name='location']").forEach(radio => {
-        radio.checked = (radio.value === selected);
-      });
+      document.querySelectorAll("input[name='location']").forEach(radio => { radio.checked = (radio.value === selected); });
+    }
+    // Zeige Krankmeldung-Bereich
+    function showKrankmeldung() {
+      resetApp();
+      document.getElementById("krankmeldung").classList.add("visible");
+      document.querySelector(".button-container").style.display = "none";
+      document.querySelector(".extra-buttons").style.display = "none";
+      document.getElementById("backButtonContainer").style.display = "block";
     }
     // Login-Funktion (Testdaten: jan / admin)
     function login() {
@@ -307,17 +328,27 @@
         localStorage.setItem("loggedIn", "true");
         document.getElementById("login").classList.remove("visible");
         document.getElementById("loginButton").style.display = "none";
-        if (!document.getElementById("chat2Button")) {
-          const chat2Btn = document.createElement("button");
-          chat2Btn.id = "chat2Button";
-          chat2Btn.textContent = "💬 Chatty 2";
-          chat2Btn.onclick = function () { showSection('chatty2', chat2Btn); };
-          document.querySelector(".button-container").appendChild(chat2Btn);
+        if (!document.getElementById("chatProButton")) {
+          const chatProBtn = document.createElement("button");
+          chatProBtn.id = "chatProButton";
+          chatProBtn.textContent = "💬 Chatty Pro";
+          chatProBtn.onclick = function () { showSection('chatty2', chatProBtn); };
+          document.querySelector(".button-container").appendChild(chatProBtn);
         }
         goBack();
       } else {
         alert("Ungültige Anmeldedaten!");
       }
+    }
+    // Speichere Einstellungen (Arbeitsort)
+    function saveSettings() {
+      const radios = document.getElementsByName("location");
+      let selected = "Lübeck";
+      for (let radio of radios) { if (radio.checked) { selected = radio.value; break; } }
+      localStorage.setItem("selectedLocation", selected);
+      fetchWeather();
+      updateStockDisplay();
+      goBack();
     }
     // Aktualisiere den Aktienkurs mitsamt Wetterinfo für den gewählten Arbeitsort
     async function updateStockDisplay() {
@@ -328,9 +359,7 @@
         const data = await res.json();
         const price = data["Global Quote"]?.["05. price"];
         priceText = price ? `RVTY - $${parseFloat(price).toFixed(2)}` : "RVTY - Kurs nicht verfügbar";
-      } catch (error) {
-        priceText = "RVTY - Kurs nicht verfügbar";
-      }
+      } catch (error) { priceText = "RVTY - Kurs nicht verfügbar"; }
       const selectedLocation = localStorage.getItem("selectedLocation") || "Lübeck";
       let weatherInfo = "";
       try {
@@ -344,9 +373,7 @@
         else if (condition.toLowerCase().includes("snow") || condition.toLowerCase().includes("schnee")) emoji = "❄️";
         else if (condition.toLowerCase().includes("mist") || condition.toLowerCase().includes("nebel")) emoji = "🌫️";
         weatherInfo = `${selectedLocation}: ${weatherData} ${emoji}`;
-      } catch (error) {
-        weatherInfo = `${selectedLocation}: ❓`;
-      }
+      } catch (error) { weatherInfo = `${selectedLocation}: ❓`; }
       document.getElementById("revvityPrice").textContent = `${priceText} | ${weatherInfo}`;
     }
     // Wetterdaten abrufen; der gewählte Ort wird fett markiert.
@@ -367,9 +394,7 @@
           else if (condition.toLowerCase().includes("mist") || condition.toLowerCase().includes("nebel")) emoji = "🌫️";
           const text = (city === selectedLocation) ? `<strong>${city}: ${weatherData} ${emoji}</strong>` : `${city}: ${weatherData} ${emoji}`;
           weatherHtml += `<p>${text}</p>`;
-        } catch (error) {
-          weatherHtml += `<p>${city}: ❓ Fehler beim Laden</p>`;
-        }
+        } catch (error) { weatherHtml += `<p>${city}: ❓ Fehler beim Laden</p>`; }
       }
       document.getElementById("weatherData").innerHTML = weatherHtml;
     }
@@ -390,18 +415,18 @@
       gameScore = 0;
       document.getElementById("gameScore").textContent = gameScore;
     }
-    // Speichere Einstellungen (Arbeitsort)
-    function saveSettings() {
-      const radios = document.getElementsByName("location");
-      let selected = "Lübeck";
-      for (let radio of radios) {
-        if (radio.checked) { selected = radio.value; break; }
-      }
-      localStorage.setItem("selectedLocation", selected);
-      // Aktualisiere Wetter und Aktienanzeige
-      fetchWeather();
-      updateStockDisplay();
-      goBack();
+    // Krankmeldung: Mail erstellen (öffnet den Mail-Client via mailto-Link)
+    function createSickMail() {
+      const von = document.getElementById("krankVon").value;
+      const bis = document.getElementById("krankBis").value;
+      const dokument = document.getElementById("krankDokument").value;
+      const body = encodeURIComponent(
+        `Hallo liebe Zeiterfassung,\n\n` +
+        `ich melde mich krank vom ${von} bis ${bis}.\n` +
+        `Verwendetes Dokument: ${dokument}\n\n` +
+        `Mit freundlichen Grüßen,`
+      );
+      window.location.href = `mailto:?subject=Krankmeldung&body=${body}`;
     }
     // Beim Laden der Seite
     document.addEventListener("DOMContentLoaded", () => {
@@ -411,23 +436,23 @@
       if (savedTheme === "light") { document.body.classList.add("light-mode"); }
       if (localStorage.getItem("loggedIn") === "true") {
         document.getElementById("loginButton").style.display = "none";
-        if (!document.getElementById("chat2Button")) {
-          const chat2Btn = document.createElement("button");
-          chat2Btn.id = "chat2Button";
-          chat2Btn.textContent = "💬 Chatty 2";
-          chat2Btn.onclick = function () { showSection('chatty2', chat2Btn); };
-          document.querySelector(".button-container").appendChild(chat2Btn);
+        if (!document.getElementById("chatProButton")) {
+          const chatProBtn = document.createElement("button");
+          chatProBtn.id = "chatProButton";
+          chatProBtn.textContent = "💬 Chatty Pro";
+          chatProBtn.onclick = function () { showSection('chatty2', chatProBtn); };
+          document.querySelector(".button-container").appendChild(chatProBtn);
         }
       }
       document.getElementById("cookie").addEventListener("click", incrementScore);
     });
     
-    // Dummy-Funktionen, die in chat.js überschrieben werden
+    // Dummy-Funktionen (werden in chat.js überschrieben)
     function sendChatMessage() {}
     function sendChatMessage2() {}
   </script>
   
-  <!-- Neues chat.js einbinden -->
+  <!-- chat.js einbinden -->
   <script src="chat.js"></script>
 </body>
 </html>
