@@ -1,0 +1,15 @@
+{
+  "name": "EUROChatty",
+  "short_name": "Chatty",
+  "start_url": "/index.html",
+  "display": "standalone",
+  "background_color": "#1e1e2f",
+  "theme_color": "#1e1e2f",
+  "icons": [
+    {
+      "src": "/ei.png",
+      "sizes": "180x180",
+      "type": "image/png"
+    }
+  ]
+}
