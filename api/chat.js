@@ -53,7 +53,7 @@ async function processChat(chatInputId, chatBoxId, historyKey, textModel, imageM
   inputElem.value = '';
   const chatBox = document.getElementById(chatBoxId);
   
-  // Anzeige der Nutzernachricht mit Avatar
+  // Anzeige der Nutzernachricht mit Avatar (🥼)
   const userMsgDiv = document.createElement('div');
   userMsgDiv.classList.add('message', 'user-message');
   userMsgDiv.innerHTML = '<span class="avatar">🥼</span> ' + message;
@@ -65,14 +65,12 @@ async function processChat(chatInputId, chatBoxId, historyKey, textModel, imageM
   
   try {
     if (message.toLowerCase().startsWith("BILD VON")) {
-      // Bildgenerierung auslösen
       const imageUrl = await callDalleAPI(message, chatHistory, { model: imageModel });
       const img = document.createElement('img');
       img.src = imageUrl;
       img.alt = message;
       chatBox.appendChild(img);
     } else {
-      // Textantwort von ChatGPT anfordern
       const botResponse = await callChatGPTAPI(message, chatHistory, { model: textModel });
       const botMsgDiv = document.createElement('div');
       botMsgDiv.classList.add('message', 'bot-message');
@@ -88,7 +86,7 @@ async function processChat(chatInputId, chatBoxId, historyKey, textModel, imageM
   }
 }
 
-// Chatty 1: Event-Listener und Senden-Funktion
+// Chatty: Event-Listener und Senden-Funktion
 document.getElementById('chatInput').addEventListener('keydown', async (e) => {
   if (e.key === 'Enter') {
     await processChat('chatInput', 'chatBox', 'chatHistory', 'gpt-3.5-turbo', 'dalle2');
@@ -106,7 +104,7 @@ window.startSpeechRecognition = function() {
   };
 };
 
-// Chatty Pro: Event-Listener und Senden-Funktion (früher Chatty 2)
+// Chatty Pro: Event-Listener und Senden-Funktion
 document.getElementById('chatInput2').addEventListener('keydown', async (e) => {
   if (e.key === 'Enter') {
     await processChat('chatInput2', 'chatBox2', 'chatHistory2', 'gpt-4', 'dalle3_hd');
