@@ -1,44 +1,42 @@
-import fetch from "node-fetch"; // ✅ Jetzt als ES-Modul
-
-const OPENAI_API_KEY = process.env.OPENAI_API_KEY; // 🔒 API-Key aus Vercel
-
 export default async function handler(req, res) {
-    if (req.method !== "POST") {
-        return res.status(405).json({ error: "Nur POST-Anfragen erlaubt" });
+  // Nur POST-Anfragen zulassen
+  if (req.method !== "POST") {
+    return res.status(405).json({ error: "Method not allowed" });
+  }
+
+  try {
+    // Destrukturiere den Request-Body
+    const { prompt, size } = req.body;
+
+    // Sende eine POST-Anfrage an die OpenAI DALL‑E API
+    const apiResponse = await fetch("https://api.openai.com/v1/images/generations", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "Authorization": `Bearer ${process.env.OPENAI_API_KEY}`
+      },
+      body: JSON.stringify({
+        prompt: prompt,
+        n: 1,
+        size: size
+      })
+    });
+
+    // Falls die Antwort nicht erfolgreich war, gib den Fehlertext zurück
+    if (!apiResponse.ok) {
+      const errorText = await apiResponse.text();
+      return res.status(apiResponse.status).json({ error: errorText });
     }
 
-    try {
-        const { prompt } = req.body;
-        if (!prompt) {
-            return res.status(400).json({ error: "Fehlende Bildbeschreibung!" });
-        }
+    const data = await apiResponse.json();
 
-        console.log("🔹 Anfrage an DALL·E 2:", prompt);
-
-        const response = await fetch("https://api.openai.com/v1/images/generations", {
-            method: "POST",
-            headers: {
-                "Authorization": `Bearer ${OPENAI_API_KEY}`,
-                "Content-Type": "application/json"
-            },
-            body: JSON.stringify({
-                model: "dall-e-2",  // ✅ Günstigeres Modell gewählt
-                prompt: prompt,
-                n: 1,
-                size: "512x512" // ✅ Handyfreundliche Bildgröße
-            })
-        });
-
-        const data = await response.json();
-        console.log("🔹 Antwort von DALL·E 2:", data);
-
-        if (!data.data || !data.data.length) {
-            return res.status(500).json({ error: "Kein Bild erhalten." });
-        }
-
-        res.status(200).json({ imageUrl: data.data[0].url });
-    } catch (error) {
-        console.error("🔴 Fehler bei DALL·E-Anfrage:", error);
-        res.status(500).json({ error: "Interner Serverfehler", details: error.message });
+    // Falls die API ein Bild generiert hat, sende die URL zurück
+    if (data.data && data.data.length > 0) {
+      return res.status(200).json({ url: data.data[0].url });
+    } else {
+      return res.status(500).json({ error: "Keine Bildantwort von der DALL‑E API erhalten." });
     }
+  } catch (error) {
+    return res.status(500).json({ error: error.message });
+  }
 }
