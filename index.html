@@ -1,0 +1,349 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>EUROChatty</title>
+  
+  <!-- Google Fonts: Source Sans Pro -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Source+Sans+Pro:wght@300;400;600&display=swap" rel="stylesheet">
+
+  <style>
+    :root {
+      --background: #1e1e2f;
+      --text-color: white;
+      --button-bg: #32CD32;
+      --button-text: black;
+      --input-bg: #2a2a3b;
+      --message-user: white;
+      --message-bot: #d1d1d1;
+    }
+    body.light-mode {
+      --background: white;
+      --text-color: black;
+      --button-bg: #32CD32; /* in beiden Modi grün */
+      --button-text: black;
+      --input-bg: #f3f3f3;
+      --message-user: #e0f7fa;
+      --message-bot: #c8e6c9;
+    }
+    body {
+      font-family: 'Source Sans Pro', sans-serif;
+      background: var(--background);
+      color: var(--text-color);
+      max-width: 600px;
+      margin: 20px auto;
+      text-align: center;
+      padding: 20px;
+      transition: background 0.3s ease, color 0.3s ease;
+    }
+    .logo {
+      margin-bottom: 20px;
+      display: flex;
+      justify-content: center;
+      cursor: pointer;
+    }
+    .logo img {
+      width: 100%;
+      max-width: 320px;
+      height: auto;
+      transition: border-radius 0.3s ease;
+    }
+    /* Dezente Rundung im Dark Mode (5px) */
+    body:not(.light-mode) .logo img {
+      border-radius: 5px;
+    }
+    body.light-mode .logo img {
+      border-radius: 0;
+    }
+    .toggle-container {
+      text-align: center;
+      margin-top: 20px;
+    }
+    .button-container, .extra-buttons {
+      display: flex;
+      flex-direction: column;
+      gap: 15px;
+      margin: 20px auto;
+      width: 100%;
+      max-width: 320px;
+    }
+    button {
+      padding: 12px;
+      border: none;
+      border-radius: 10px;
+      font-size: 1rem;
+      cursor: pointer;
+      font-weight: bold;
+      color: var(--button-text);
+      background: var(--button-bg);
+      transition: background-color 0.3s, transform 0.2s ease, box-shadow 0.3s;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+    }
+    button:hover {
+      background-color: #228b22;
+      transform: scale(1.05);
+      box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+    }
+    .stock-container {
+      background: white;
+      padding: 10px;
+      border-radius: 8px;
+      margin-bottom: 20px;
+      display: inline-block;
+      width: 90%;
+      max-width: 280px; /* etwas kleiner als das Logo */
+      color: black;
+      font-weight: bold;
+    }
+    .content {
+      display: none;
+      opacity: 0;
+      transform: translateY(20px);
+      transition: opacity 0.4s ease, transform 0.4s ease;
+    }
+    .visible {
+      display: block;
+      opacity: 1;
+      transform: translateY(0);
+    }
+    .message {
+      padding: 10px;
+      border-radius: 10px;
+      margin: 5px 0;
+      font-family: 'Source Sans Pro', sans-serif;
+      text-align: left;
+    }
+    .user-message {
+      background: var(--message-user);
+      color: black;
+      text-align: right;
+    }
+    .bot-message {
+      background: var(--message-bot);
+      color: black;
+      text-align: left;
+    }
+    .input-container {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 10px;
+      width: 100%;
+    }
+    input {
+      width: 90%;
+      padding: 12px;
+      border: 2px solid var(--button-bg);
+      border-radius: 10px;
+      font-size: 1rem;
+      background: var(--input-bg);
+      color: var(--text-color);
+      outline: none;
+      transition: border 0.3s;
+    }
+    input::placeholder {
+      color: #aaa;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Logo & Aktienkurs -->
+  <div class="logo" onclick="resetApp()">
+    <img src="logo.png" alt="EUROChatty Logo">
+  </div>
+  <div class="stock-container">
+    <div id="revvityPrice">RVTY - Wird geladen...</div>
+  </div>
+
+  <!-- Hauptbuttons -->
+  <div class="button-container">
+    <button id="chatButton" onclick="showSection('chatty', this)">💬 Chatty</button>
+    <button id="weatherButton" onclick="showSection('weather', this)">🌦 Wetter</button>
+  </div>
+
+  <!-- Chatty 1 Section -->
+  <div id="chatty" class="content">
+    <div class="input-container">
+      <input type="text" id="chatInput" placeholder="Frage oder 'bild von ...'">
+      <button onclick="sendChatMessage()">Senden</button>
+      <button onclick="startSpeechRecognition()">🎤 Spracheingabe</button>
+    </div>
+    <div id="chatBox"></div>
+  </div>
+
+  <!-- Wetter Section -->
+  <div id="weather" class="content">
+    <h3>Wetter</h3>
+    <div id="weatherData">Wird geladen...</div>
+  </div>
+
+  <!-- Chatty 2 Section (wird nach Login verfügbar) -->
+  <div id="chatty2" class="content">
+    <div class="input-container">
+      <input type="text" id="chatInput2" placeholder="Frage oder 'bild von ...'">
+      <button onclick="sendChatMessage2()">Senden</button>
+      <button onclick="startSpeechRecognition2()">🎤 Spracheingabe</button>
+    </div>
+    <div id="chatBox2"></div>
+  </div>
+
+  <!-- Extra Buttons -->
+  <div class="extra-buttons">
+    <button id="loginButton" onclick="showLogin()">🔐 Login</button>
+    <button onclick="showInspiration()">💡 Inspire me!</button>
+    <button onclick="showCookieClicker()">🎮 Cookie Clicker</button>
+  </div>
+
+  <!-- Login Section -->
+  <div id="login" class="content">
+    <h3>Login</h3>
+    <div class="input-container">
+      <input type="text" id="username" placeholder="Benutzername">
+      <input type="password" id="password" placeholder="Passwort">
+      <button onclick="login()">Login</button>
+    </div>
+  </div>
+
+  <!-- Cookie Clicker (Mini Game) -->
+  <div id="minigame" class="content">
+    <h3>Cookie Clicker</h3>
+    <p>Score: <span id="gameScore">0</span></p>
+    <!-- Großes, klickbares Cookie -->
+    <div id="cookie" style="font-size: 100px; cursor: pointer;">🍪</div>
+    <button onclick="resetGame()">Spiel zurücksetzen</button>
+  </div>
+
+  <!-- Toggle Theme Button am unteren Seitenende -->
+  <div class="toggle-container">
+    <button onclick="toggleTheme()">🌙 / ☀️</button>
+  </div>
+
+  <script>
+    // Theme Toggle Function
+    function toggleTheme() {
+      document.body.classList.toggle("light-mode");
+      localStorage.setItem("theme", document.body.classList.contains("light-mode") ? "light" : "dark");
+    }
+    // Reset App: Blendet alle Content-Bereiche aus und entfernt aktive Zustände
+    function resetApp() {
+      document.querySelectorAll(".content").forEach(section => {
+        section.classList.remove("visible");
+      });
+      document.querySelectorAll(".button-container button, .extra-buttons button").forEach(btn => btn.classList.remove("active"));
+    }
+    // Zeige einen bestimmten Abschnitt an
+    function showSection(sectionId, button) {
+      resetApp();
+      if (button) {
+        button.classList.add("active");
+      }
+      setTimeout(() => {
+        document.getElementById(sectionId).classList.add("visible");
+      }, 200);
+    }
+    // Zeige Login-Bereich
+    function showLogin() {
+      resetApp();
+      document.getElementById("login").classList.add("visible");
+    }
+    // Login-Funktion (Testdaten: jan / admin)
+    function login() {
+      const username = document.getElementById("username").value.trim();
+      const password = document.getElementById("password").value.trim();
+      if (username === "jan" && password === "admin") {
+        alert("Login erfolgreich!");
+        localStorage.setItem("loggedIn", "true");
+        document.getElementById("login").classList.remove("visible");
+        document.getElementById("loginButton").style.display = "none";
+        if (!document.getElementById("chat2Button")) {
+          const chat2Btn = document.createElement("button");
+          chat2Btn.id = "chat2Button";
+          chat2Btn.textContent = "💬 Chatty 2";
+          chat2Btn.onclick = function () { showSection('chatty2', chat2Btn); };
+          document.querySelector(".button-container").appendChild(chat2Btn);
+        }
+      } else {
+        alert("Ungültige Anmeldedaten!");
+      }
+    }
+    // Aktienkurs abrufen
+    async function fetchStockPrice() {
+      const url = "https://www.alphavantage.co/query?function=GLOBAL_QUOTE&symbol=RVTY&apikey=YOUR_API_KEY";
+      fetch(url)
+        .then(res => res.json())
+        .then(data => {
+          const price = data["Global Quote"]?.["05. price"];
+          document.getElementById("revvityPrice").textContent = price ? `RVTY - $${parseFloat(price).toFixed(2)}` : "RVTY - Kurs nicht verfügbar";
+        });
+    }
+    // Wetterdaten abrufen
+    async function fetchWeather() {
+      const locations = ["Lübeck", "Selmsdorf", "Dassow", "Rennersdorf"];
+      let weatherHtml = "";
+      for (let city of locations) {
+        try {
+          const response = await fetch(`https://wttr.in/${city}?format=%C+%t`);
+          const weatherData = await response.text();
+          const condition = weatherData.split(" ")[0];
+          let emoji = "";
+          if (condition.toLowerCase().includes("clear") || condition.toLowerCase().includes("sonnig") || condition.toLowerCase().includes("sunny")) emoji = "☀️";
+          else if (condition.toLowerCase().includes("cloud") || condition.toLowerCase().includes("wolkig")) emoji = "☁️";
+          else if (condition.toLowerCase().includes("rain") || condition.toLowerCase().includes("regen")) emoji = "🌧️";
+          else if (condition.toLowerCase().includes("snow") || condition.toLowerCase().includes("schnee")) emoji = "❄️";
+          else if (condition.toLowerCase().includes("mist") || condition.toLowerCase().includes("nebel")) emoji = "🌫️";
+          weatherHtml += `<p>${city}: ${weatherData} ${emoji}</p>`;
+        } catch (error) {
+          weatherHtml += `<p>${city}: ❓ Fehler beim Laden</p>`;
+        }
+      }
+      document.getElementById("weatherData").innerHTML = weatherHtml;
+    }
+    // Cookie Clicker Funktionen
+    let gameScore = 0;
+    function showCookieClicker() {
+      resetApp();
+      document.getElementById("minigame").classList.add("visible");
+    }
+    function incrementScore() {
+      gameScore++;
+      document.getElementById("gameScore").textContent = gameScore;
+    }
+    function resetGame() {
+      gameScore = 0;
+      document.getElementById("gameScore").textContent = gameScore;
+    }
+    // Beim Laden der Seite: Aktienkurs, Wetterdaten laden und Theme setzen
+    document.addEventListener("DOMContentLoaded", () => {
+      fetchStockPrice();
+      fetchWeather();
+      const savedTheme = localStorage.getItem("theme");
+      if (savedTheme === "light") {
+        document.body.classList.add("light-mode");
+      }
+      if (localStorage.getItem("loggedIn") === "true") {
+        document.getElementById("loginButton").style.display = "none";
+        if (!document.getElementById("chat2Button")) {
+          const chat2Btn = document.createElement("button");
+          chat2Btn.id = "chat2Button";
+          chat2Btn.textContent = "💬 Chatty 2";
+          chat2Btn.onclick = function () { showSection('chatty2', chat2Btn); };
+          document.querySelector(".button-container").appendChild(chat2Btn);
+        }
+      }
+      // Cookie Clicker: Klick-Event für das Cookie-Emoji
+      document.getElementById("cookie").addEventListener("click", incrementScore);
+    });
+    
+    // Dummy-Funktionen, die in chat.js überschrieben werden
+    function sendChatMessage() {}
+    function sendChatMessage2() {}
+  </script>
+  
+  <!-- Einbinden des neuen chat.js -->
+  <script src="chat.js"></script>
+</body>
+</html>
