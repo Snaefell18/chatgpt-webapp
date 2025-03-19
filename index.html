@@ -274,7 +274,7 @@
     <button onclick="resetGame()">Spiel zurücksetzen</button>
   </div>
 
-  <!-- Toggle Container: enthält den Hell-/Dunkelmodus-Button, den Krankmeldung-Button und den Essenskorrektur-Button -->
+  <!-- Toggle Container: enthält Hell-/Dunkelmodus, Krankmeldung und Essenskorrektur -->
   <div class="toggle-container">
     <button onclick="toggleTheme()">🌙 / ☀️</button>
     <button onclick="showKrankmeldung()">👩‍⚕️</button>
@@ -308,7 +308,7 @@
       document.querySelector(".extra-buttons").style.display = "flex";
       document.getElementById("backButtonContainer").style.display = "none";
     }
-    // Login-Bereich anzeigen
+    // Login anzeigen
     function showLogin() {
       resetApp();
       document.getElementById("login").classList.add("visible");
@@ -342,7 +342,7 @@
       document.querySelector(".extra-buttons").style.display = "none";
       document.getElementById("backButtonContainer").style.display = "block";
     }
-    // Login-Funktion (Testdaten: jan/admin)
+    // Login-Funktion (Testdaten: jan / admin)
     function login() {
       const username = document.getElementById("username").value.trim();
       const password = document.getElementById("password").value.trim();
@@ -363,7 +363,7 @@
         alert("Ungültige Anmeldedaten!");
       }
     }
-    // Speichere Einstellungen (Arbeitsort) und aktualisiere Wetter/Stock
+    // Einstellungen speichern, Wetter und Stock aktualisieren
     function saveSettings() {
       const radios = document.getElementsByName("location");
       let selected = "Lübeck";
@@ -373,7 +373,7 @@
       updateStockDisplay();
       goBack();
     }
-    // Aktualisiere Aktienkurs + Wetterinfo (Standort, Temperatur, Symbol)
+    // Aktualisiere Aktienkurs und Wetterinfo
     async function updateStockDisplay() {
       const stockUrl = "https://www.alphavantage.co/query?function=GLOBAL_QUOTE&symbol=RVTY&apikey=YOUR_API_KEY";
       let priceText = "";
@@ -457,9 +457,7 @@
       const bis = document.getElementById("essenBis").value;
       let location = "Lübeck";
       const radios = document.getElementsByName("essenLocation");
-      for (let radio of radios) {
-        if (radio.checked) { location = radio.value; break; }
-      }
+      for (let radio of radios) { if (radio.checked) { location = radio.value; break; } }
       const body = encodeURIComponent(
         `Hallo liebes Sekretariat,\n\n` +
         `hiermit melde ich eine Essenskorrektur für den Standort ${location}.\n` +
