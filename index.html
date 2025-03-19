@@ -64,11 +64,10 @@
       margin-bottom: 20px;
     }
     .toggle-container {
-      text-align: center;
-      margin-top: 20px;
       display: flex;
       justify-content: center;
       gap: 10px;
+      margin-top: 20px;
     }
     .button-container, .extra-buttons {
       display: flex;
@@ -174,7 +173,7 @@
     <button onclick="goBack()">← Zurück</button>
   </div>
 
-  <!-- Hauptbuttons (werden ausgeblendet, wenn eine Funktion aktiv ist) -->
+  <!-- Hauptbuttons -->
   <div class="button-container">
     <button id="chatButton" onclick="showSection('chatty', this)">💬 Chatty</button>
     <button id="weatherButton" onclick="showSection('weather', this)">🌦 Wetter</button>
@@ -186,7 +185,7 @@
     <button id="settingsButton" onclick="showSettings()">⚙️ Einstellungen</button>
   </div>
 
-  <!-- Chatty 1 Section -->
+  <!-- Chatty Section -->
   <div id="chatty" class="content">
     <div class="input-container">
       <input type="text" id="chatInput" placeholder="Frage oder 'BILD VON ...'">
@@ -202,7 +201,7 @@
     <div id="weatherData">Wird geladen...</div>
   </div>
 
-  <!-- Chatty Pro Section (früher Chatty 2 – wird nach Login verfügbar) -->
+  <!-- Chatty Pro Section (früher Chatty 2) -->
   <div id="chatty2" class="content">
     <div class="input-container">
       <input type="text" id="chatInput2" placeholder="Frage oder 'BILD VON ...'">
@@ -251,6 +250,21 @@
     </div>
   </div>
 
+  <!-- Essenskorrektur Section -->
+  <div id="essenskorr" class="content">
+    <h3>Essenskorrektur</h3>
+    <div class="input-container">
+      <p>Wähle deinen Standort:</p>
+      <label><input type="radio" name="essenLocation" value="Lübeck"> Lübeck</label>
+      <label><input type="radio" name="essenLocation" value="Dassow"> Dassow</label>
+      <label><input type="radio" name="essenLocation" value="Selmsdorf"> Selmsdorf</label>
+      <label><input type="radio" name="essenLocation" value="Rennersdorf"> Rennersdorf</label>
+      <label>Von: <input type="date" id="essenVon"></label>
+      <label>Bis: <input type="date" id="essenBis"></label>
+      <button onclick="createFoodMail()">Mail erstellen</button>
+    </div>
+  </div>
+
   <!-- Cookie Clicker (Mini Game) -->
   <div id="minigame" class="content">
     <h3>Cookie Clicker</h3>
@@ -260,24 +274,25 @@
     <button onclick="resetGame()">Spiel zurücksetzen</button>
   </div>
 
-  <!-- Toggle Container: enthält den Hell-/Dunkelmodus-Button und den Krankmeldung-Button -->
+  <!-- Toggle Container: enthält den Hell-/Dunkelmodus-Button, den Krankmeldung-Button und den Essenskorrektur-Button -->
   <div class="toggle-container">
     <button onclick="toggleTheme()">🌙 / ☀️</button>
     <button onclick="showKrankmeldung()">👩‍⚕️</button>
+    <button onclick="showEssenskorrektur()">🥘</button>
   </div>
 
   <script>
-    // Theme Toggle Function
+    // Theme Toggle
     function toggleTheme() {
       document.body.classList.toggle("light-mode");
       localStorage.setItem("theme", document.body.classList.contains("light-mode") ? "light" : "dark");
     }
-    // Reset App: Blendet alle Content-Bereiche aus und entfernt aktive Zustände
+    // Reset: Blendet alle Bereiche aus
     function resetApp() {
       document.querySelectorAll(".content").forEach(section => { section.classList.remove("visible"); });
       document.querySelectorAll(".button-container button, .extra-buttons button").forEach(btn => btn.classList.remove("active"));
     }
-    // Zeige einen bestimmten Abschnitt an – Hauptbuttons ausblenden, Zurück-Button einblenden
+    // Zeige einen Bereich – Hauptbuttons ausblenden, Zurück-Button einblenden
     function showSection(sectionId, button) {
       resetApp();
       document.querySelector(".button-container").style.display = "none";
@@ -293,7 +308,7 @@
       document.querySelector(".extra-buttons").style.display = "flex";
       document.getElementById("backButtonContainer").style.display = "none";
     }
-    // Zeige Login-Bereich
+    // Login-Bereich anzeigen
     function showLogin() {
       resetApp();
       document.getElementById("login").classList.add("visible");
@@ -301,7 +316,7 @@
       document.querySelector(".extra-buttons").style.display = "none";
       document.getElementById("backButtonContainer").style.display = "block";
     }
-    // Zeige Einstellungen-Bereich
+    // Einstellungen anzeigen
     function showSettings() {
       resetApp();
       document.getElementById("settings").classList.add("visible");
@@ -311,7 +326,7 @@
       const selected = localStorage.getItem("selectedLocation") || "Lübeck";
       document.querySelectorAll("input[name='location']").forEach(radio => { radio.checked = (radio.value === selected); });
     }
-    // Zeige Krankmeldung-Bereich
+    // Krankmeldung anzeigen
     function showKrankmeldung() {
       resetApp();
       document.getElementById("krankmeldung").classList.add("visible");
@@ -319,7 +334,15 @@
       document.querySelector(".extra-buttons").style.display = "none";
       document.getElementById("backButtonContainer").style.display = "block";
     }
-    // Login-Funktion (Testdaten: jan / admin)
+    // Essenskorrektur anzeigen
+    function showEssenskorrektur() {
+      resetApp();
+      document.getElementById("essenskorr").classList.add("visible");
+      document.querySelector(".button-container").style.display = "none";
+      document.querySelector(".extra-buttons").style.display = "none";
+      document.getElementById("backButtonContainer").style.display = "block";
+    }
+    // Login-Funktion (Testdaten: jan/admin)
     function login() {
       const username = document.getElementById("username").value.trim();
       const password = document.getElementById("password").value.trim();
@@ -340,7 +363,7 @@
         alert("Ungültige Anmeldedaten!");
       }
     }
-    // Speichere Einstellungen (Arbeitsort)
+    // Speichere Einstellungen (Arbeitsort) und aktualisiere Wetter/Stock
     function saveSettings() {
       const radios = document.getElementsByName("location");
       let selected = "Lübeck";
@@ -350,7 +373,7 @@
       updateStockDisplay();
       goBack();
     }
-    // Aktualisiere den Aktienkurs mitsamt Wetterinfo für den gewählten Arbeitsort
+    // Aktualisiere Aktienkurs + Wetterinfo (Standort, Temperatur, Symbol)
     async function updateStockDisplay() {
       const stockUrl = "https://www.alphavantage.co/query?function=GLOBAL_QUOTE&symbol=RVTY&apikey=YOUR_API_KEY";
       let priceText = "";
@@ -376,7 +399,7 @@
       } catch (error) { weatherInfo = `${selectedLocation}: ❓`; }
       document.getElementById("revvityPrice").textContent = `${priceText} | ${weatherInfo}`;
     }
-    // Wetterdaten abrufen; der gewählte Ort wird fett markiert.
+    // Wetterdaten abrufen; markiere den ausgewählten Ort fett
     async function fetchWeather() {
       const locations = ["Lübeck", "Selmsdorf", "Dassow", "Rennersdorf"];
       let weatherHtml = "";
@@ -415,7 +438,7 @@
       gameScore = 0;
       document.getElementById("gameScore").textContent = gameScore;
     }
-    // Krankmeldung: Mail erstellen (öffnet den Mail-Client via mailto-Link)
+    // Krankmeldung: Mail erstellen
     function createSickMail() {
       const von = document.getElementById("krankVon").value;
       const bis = document.getElementById("krankBis").value;
@@ -427,6 +450,23 @@
         `Mit freundlichen Grüßen,`
       );
       window.location.href = `mailto:?subject=Krankmeldung&body=${body}`;
+    }
+    // Essenskorrektur: Mail erstellen
+    function createFoodMail() {
+      const von = document.getElementById("essenVon").value;
+      const bis = document.getElementById("essenBis").value;
+      let location = "Lübeck";
+      const radios = document.getElementsByName("essenLocation");
+      for (let radio of radios) {
+        if (radio.checked) { location = radio.value; break; }
+      }
+      const body = encodeURIComponent(
+        `Hallo liebes Sekretariat,\n\n` +
+        `hiermit melde ich eine Essenskorrektur für den Standort ${location}.\n` +
+        `Korrekturzeitraum: vom ${von} bis ${bis}.\n\n` +
+        `Mit freundlichen Grüßen,`
+      );
+      window.location.href = `mailto:?subject=Essenskorrektur&body=${body}`;
     }
     // Beim Laden der Seite
     document.addEventListener("DOMContentLoaded", () => {
