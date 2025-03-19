@@ -23,7 +23,7 @@
     body.light-mode {
       --background: white;
       --text-color: black;
-      --button-bg: #32CD32; /* in beiden Modi grün */
+      --button-bg: #32CD32;
       --button-text: black;
       --input-bg: #f3f3f3;
       --message-user: #e0f7fa;
@@ -57,6 +57,11 @@
     }
     body.light-mode .logo img {
       border-radius: 0;
+    }
+    /* Container für den Zurück-Button – standardmäßig versteckt */
+    #backButtonContainer {
+      display: none;
+      margin-bottom: 20px;
     }
     .toggle-container {
       text-align: center;
@@ -94,7 +99,7 @@
       margin-bottom: 20px;
       display: inline-block;
       width: 90%;
-      max-width: 280px; /* etwas kleiner als das Logo */
+      max-width: 280px;
       color: black;
       font-weight: bold;
     }
@@ -151,18 +156,30 @@
 </head>
 <body>
 
-  <!-- Logo & Aktienkurs -->
+  <!-- Titelbild / Logo -->
   <div class="logo" onclick="resetApp()">
     <img src="logo.png" alt="EUROChatty Logo">
   </div>
+
+  <!-- Zurück-Button (wird nur bei aktiver Funktion angezeigt) -->
+  <div id="backButtonContainer">
+    <button onclick="goBack()">← Zurück</button>
+  </div>
+
+  <!-- Aktienkurs -->
   <div class="stock-container">
     <div id="revvityPrice">RVTY - Wird geladen...</div>
   </div>
 
-  <!-- Hauptbuttons -->
+  <!-- Hauptbuttons (werden ausgeblendet, wenn eine Funktion aktiv ist) -->
   <div class="button-container">
     <button id="chatButton" onclick="showSection('chatty', this)">💬 Chatty</button>
     <button id="weatherButton" onclick="showSection('weather', this)">🌦 Wetter</button>
+  </div>
+  <div class="extra-buttons">
+    <button id="loginButton" onclick="showLogin()">🔐 Login</button>
+    <button onclick="showInspiration()">💡 Inspire me!</button>
+    <button onclick="showCookieClicker()">🎮 Cookie Clicker</button>
   </div>
 
   <!-- Chatty 1 Section -->
@@ -191,13 +208,6 @@
     <div id="chatBox2"></div>
   </div>
 
-  <!-- Extra Buttons -->
-  <div class="extra-buttons">
-    <button id="loginButton" onclick="showLogin()">🔐 Login</button>
-    <button onclick="showInspiration()">💡 Inspire me!</button>
-    <button onclick="showCookieClicker()">🎮 Cookie Clicker</button>
-  </div>
-
   <!-- Login Section -->
   <div id="login" class="content">
     <h3>Login</h3>
@@ -217,7 +227,7 @@
     <button onclick="resetGame()">Spiel zurücksetzen</button>
   </div>
 
-  <!-- Toggle Theme Button am unteren Seitenende -->
+  <!-- Toggle Theme Button -->
   <div class="toggle-container">
     <button onclick="toggleTheme()">🌙 / ☀️</button>
   </div>
@@ -235,9 +245,14 @@
       });
       document.querySelectorAll(".button-container button, .extra-buttons button").forEach(btn => btn.classList.remove("active"));
     }
-    // Zeige einen bestimmten Abschnitt an
+    // Zeige einen bestimmten Abschnitt an – zusätzlich werden die Hauptbuttons ausgeblendet und der Zurück-Button eingeblendet
     function showSection(sectionId, button) {
       resetApp();
+      // Hauptbuttons ausblenden
+      document.querySelector(".button-container").style.display = "none";
+      document.querySelector(".extra-buttons").style.display = "none";
+      // Zurück-Button anzeigen
+      document.getElementById("backButtonContainer").style.display = "block";
       if (button) {
         button.classList.add("active");
       }
@@ -245,10 +260,23 @@
         document.getElementById(sectionId).classList.add("visible");
       }, 200);
     }
+    // Gehe zurück zur Hauptübersicht: Funktionale Bereiche ausblenden und Hauptbuttons wieder einblenden
+    function goBack() {
+      resetApp();
+      // Hauptbuttons wieder anzeigen
+      document.querySelector(".button-container").style.display = "flex";
+      document.querySelector(".extra-buttons").style.display = "flex";
+      // Zurück-Button ausblenden
+      document.getElementById("backButtonContainer").style.display = "none";
+    }
     // Zeige Login-Bereich
     function showLogin() {
       resetApp();
       document.getElementById("login").classList.add("visible");
+      // Blende die Hauptbuttons aus und zeige den Zurück-Button
+      document.querySelector(".button-container").style.display = "none";
+      document.querySelector(".extra-buttons").style.display = "none";
+      document.getElementById("backButtonContainer").style.display = "block";
     }
     // Login-Funktion (Testdaten: jan / admin)
     function login() {
@@ -266,6 +294,8 @@
           chat2Btn.onclick = function () { showSection('chatty2', chat2Btn); };
           document.querySelector(".button-container").appendChild(chat2Btn);
         }
+        // Nach Login zurück zur Hauptübersicht (Buttons wieder anzeigen)
+        goBack();
       } else {
         alert("Ungültige Anmeldedaten!");
       }
@@ -307,6 +337,10 @@
     function showCookieClicker() {
       resetApp();
       document.getElementById("minigame").classList.add("visible");
+      // Hauptbuttons ausblenden und Zurück-Button anzeigen
+      document.querySelector(".button-container").style.display = "none";
+      document.querySelector(".extra-buttons").style.display = "none";
+      document.getElementById("backButtonContainer").style.display = "block";
     }
     function incrementScore() {
       gameScore++;
@@ -343,7 +377,7 @@
     function sendChatMessage2() {}
   </script>
   
-  <!-- Einbinden des neuen chat.js -->
+  <!-- Neues chat.js einbinden -->
   <script src="chat.js"></script>
 </body>
 </html>
