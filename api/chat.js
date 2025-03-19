@@ -13,6 +13,10 @@ async function callChatGPTAPI(message, chatHistory, options = {}) {
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ model, message: userMessage, chatHistory })
   });
+  if (!response.ok) {
+    const errorText = await response.text();
+    throw new Error("API request failed: " + errorText);
+  }
   const data = await response.json();
   if (data.answer) { 
     return data.answer; 
@@ -34,6 +38,10 @@ async function callDalleAPI(message, chatHistory, options = {}) {
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ prompt, size })
   });
+  if (!response.ok) {
+    const errorText = await response.text();
+    throw new Error("API request failed: " + errorText);
+  }
   const data = await response.json();
   if (data.url) { 
     return data.url; 
@@ -65,12 +73,14 @@ async function processChat(chatInputId, chatBoxId, historyKey, textModel, imageM
   
   try {
     if (message.toLowerCase().startsWith("BILD VON")) {
+      // Bildgenerierung auslösen
       const imageUrl = await callDalleAPI(message, chatHistory, { model: imageModel });
       const img = document.createElement('img');
       img.src = imageUrl;
       img.alt = message;
       chatBox.appendChild(img);
     } else {
+      // Textantwort über ChatGPT anfordern
       const botResponse = await callChatGPTAPI(message, chatHistory, { model: textModel });
       const botMsgDiv = document.createElement('div');
       botMsgDiv.classList.add('message', 'bot-message');
