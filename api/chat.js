@@ -1,5 +1,5 @@
 // Verwende den API-Schlüssel, der über Vercel (oder als Umgebungsvariable) hinterlegt ist.
-const OPENAI_API_KEY = 'YOUR_OPENAI_API_KEY'; // Ersetze diesen Platzhalter durch deinen Schlüssel
+const OPENAI_API_KEY = process.env.OPENAI_API_KEY; // Ersetze diesen Platzhalter durch deinen Schlüssel
 
 // Ruft die ChatGPT-API auf und liefert die Antwort zurück.
 async function callChatGPTAPI(message, chatHistory, options = {}) {
