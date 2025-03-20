@@ -29,6 +29,12 @@
       transform: translate(-50%, -50%);
       transition: transform 1s ease, top 1s ease;
     }
+    /* Das Bild im Splash-Screen gleich groß wie später im .logo */
+    #splash-logo img {
+      width: 100%;
+      max-width: 320px;
+      height: auto;
+    }
     /* Logo nach oben bewegen (auf top: 44px) */
     #splash.move-up #splash-logo {
       top: 44px;
@@ -104,8 +110,7 @@
     .button-container, .extra-buttons {
       display: flex;
       flex-direction: column;
-      /* Einheitliche Abstände: 20px */
-      gap: 20px;
+      gap: 20px; /* Einheitliche Abstände */
       margin: 20px auto;
       width: 100%;
       max-width: 320px;
@@ -178,7 +183,7 @@
       width: 90%;
       padding: 12px;
       border: 2px solid var(--button-bg);
-      border-radius: 6px; /* Auch hier etwas weniger rund */
+      border-radius: 6px; /* Ebenfalls 6px */
       font-size: 1rem;
       background: var(--input-bg);
       color: var(--text-color);
@@ -194,7 +199,7 @@
   <!-- Splash Screen mit Logo -->
   <div id="splash">
     <div id="splash-logo">
-      <img src="logo.png" alt="EUROChatty Logo" style="max-width: 300px;">
+      <img src="logo.png" alt="EUROChatty Logo">
     </div>
   </div>
   
@@ -416,7 +421,7 @@
     // Aktualisiere Aktienkurs und Wetterinfo
     async function updateStockDisplay() {
       // Ersetze "YOUR_API_KEY" durch deinen echten AlphaVantage-API-Key
-      const stockUrl = "https://www.alphavantage.co/query?function=GLOBAL_QUOTE&symbol=RVTY&apikey=YOUR_API_KEY";
+      const stockUrl = "https://www.alphavantage.co/query?function=GLOBAL_QUOTE&symbol=RVTY&apikey=YSKN4T79LY2HR1GA";
       let priceText = "";
       try {
         const res = await fetch(stockUrl);
