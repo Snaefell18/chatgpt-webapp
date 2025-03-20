@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>EUROIMMUN</title>
+  <title>EUROChatty</title>
   
   <!-- Google Fonts: Source Sans Pro -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -29,7 +29,7 @@
       transform: translate(-50%, -50%);
       transition: transform 1s ease, top 1s ease;
     }
-    /* Logo nach oben bewegen (auf top: 80px) */
+    /* Logo nach oben bewegen (auf top: 44px) */
     #splash.move-up #splash-logo {
       top: 44px;
       transform: translate(-50%, 0);
@@ -113,7 +113,8 @@
     button {
       padding: 12px;
       border: none;
-      border-radius: 10px;
+      /* Weniger runde Ecken (6px) */
+      border-radius: 6px;
       font-size: 1rem;
       cursor: pointer;
       font-weight: bold;
@@ -177,7 +178,7 @@
       width: 90%;
       padding: 12px;
       border: 2px solid var(--button-bg);
-      border-radius: 10px;
+      border-radius: 6px; /* Auch hier etwas weniger rund */
       font-size: 1rem;
       background: var(--input-bg);
       color: var(--text-color);
@@ -414,6 +415,7 @@
     }
     // Aktualisiere Aktienkurs und Wetterinfo
     async function updateStockDisplay() {
+      // Ersetze "YOUR_API_KEY" durch deinen echten AlphaVantage-API-Key
       const stockUrl = "https://www.alphavantage.co/query?function=GLOBAL_QUOTE&symbol=RVTY&apikey=YOUR_API_KEY";
       let priceText = "";
       try {
