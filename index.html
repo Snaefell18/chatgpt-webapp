@@ -4,16 +4,6 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>EUROChatty</title>
-
-  <!-- Macht die App im Vollbildmodus (versteckt die Browser-UI) -->
-<meta name="apple-mobile-web-app-capable" content="yes">
-<!-- Legt den Statusbar-Stil fest (optional: "default", "black", "black-translucent") -->
-<meta name="apple-mobile-web-app-status-bar-style" content="default">
-<!-- Definiert das Icon, das auf dem Home Screen verwendet wird -->
-<link rel="apple-touch-icon" href="/pfad/zu/ei.png">
-<!-- Verweist auf dein Web App Manifest -->
-<link rel="manifest" href="/manifest.json">
-
   
   <!-- Google Fonts: Source Sans Pro -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -21,6 +11,26 @@
   <link href="https://fonts.googleapis.com/css2?family=Source+Sans+Pro:wght@300;400;600&display=swap" rel="stylesheet">
   
   <style>
+    /* Splash Screen CSS */
+    #splash {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: var(--background);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      z-index: 1000;
+      transition: opacity 0.5s ease;
+    }
+    #splash.fade-out {
+      opacity: 0;
+      pointer-events: none;
+    }
+    
+    /* Basis CSS */
     :root {
       --background: #1e1e2f;
       --text-color: white;
@@ -167,22 +177,28 @@
   </style>
 </head>
 <body>
-
+  <!-- Splash Screen -->
+  <div id="splash">
+    <img src="logo.png" alt="EUROChatty Logo" style="max-width: 300px;">
+  </div>
+  
+  <!-- Rest der App (unverändert) -->
+  
   <!-- Titelbild / Logo -->
   <div class="logo" onclick="resetApp()">
     <img src="logo.png" alt="EUROChatty Logo">
   </div>
-
+  
   <!-- Aktienkurs -->
   <div class="stock-container">
     <div id="revvityPrice">RVTY - Wird geladen...</div>
   </div>
-
+  
   <!-- Zurück-Button (unter dem Aktienkurs) -->
   <div id="backButtonContainer">
     <button onclick="goBack()">← Zurück</button>
   </div>
-
+  
   <!-- Hauptbuttons -->
   <div class="button-container">
     <button id="chatButton" onclick="showSection('chatty', this)">💬 Chatty</button>
@@ -194,7 +210,7 @@
     <button id="loginButton" onclick="showLogin()">🔐 Login</button>
     <button id="settingsButton" onclick="showSettings()">⚙️ Einstellungen</button>
   </div>
-
+  
   <!-- Chatty Section -->
   <div id="chatty" class="content">
     <div class="input-container">
@@ -204,13 +220,13 @@
     </div>
     <div id="chatBox"></div>
   </div>
-
+  
   <!-- Wetter Section -->
   <div id="weather" class="content">
     <h3>Wetter</h3>
     <div id="weatherData">Wird geladen...</div>
   </div>
-
+  
   <!-- Chatty Pro Section (früher Chatty 2) -->
   <div id="chatty2" class="content">
     <div class="input-container">
@@ -220,7 +236,7 @@
     </div>
     <div id="chatBox2"></div>
   </div>
-
+  
   <!-- Login Section -->
   <div id="login" class="content">
     <h3>Login</h3>
@@ -230,7 +246,7 @@
       <button onclick="login()">Login</button>
     </div>
   </div>
-
+  
   <!-- Einstellungen Section -->
   <div id="settings" class="content">
     <h3>Einstellungen</h3>
@@ -243,7 +259,7 @@
       <button onclick="saveSettings()">Speichern</button>
     </div>
   </div>
-
+  
   <!-- Krankmeldung Section -->
   <div id="krankmeldung" class="content">
     <h3>Krankmeldung</h3>
@@ -259,7 +275,7 @@
       <button onclick="createSickMail()">Mail erstellen</button>
     </div>
   </div>
-
+  
   <!-- Essenskorrektur Section -->
   <div id="essenskorr" class="content">
     <h3>Essenskorrektur</h3>
@@ -274,7 +290,7 @@
       <button onclick="createFoodMail()">Mail erstellen</button>
     </div>
   </div>
-
+  
   <!-- Cookie Clicker (Mini Game) -->
   <div id="minigame" class="content">
     <h3>Cookie Clicker</h3>
@@ -283,21 +299,21 @@
     <div id="cookie" style="font-size: 100px; cursor: pointer;">🍪</div>
     <button onclick="resetGame()">Spiel zurücksetzen</button>
   </div>
-
+  
   <!-- Toggle Container: enthält Hell-/Dunkelmodus, Krankmeldung und Essenskorrektur -->
   <div class="toggle-container">
     <button onclick="toggleTheme()">🌙 / ☀️</button>
     <button onclick="showKrankmeldung()">👩‍⚕️</button>
     <button onclick="showEssenskorrektur()">🥘</button>
   </div>
-
+  
   <script>
     // Theme Toggle
     function toggleTheme() {
       document.body.classList.toggle("light-mode");
       localStorage.setItem("theme", document.body.classList.contains("light-mode") ? "light" : "dark");
     }
-    // Reset: Blendet alle Bereiche aus
+    // Reset: Alle Bereiche ausblenden
     function resetApp() {
       document.querySelectorAll(".content").forEach(section => { section.classList.remove("visible"); });
       document.querySelectorAll(".button-container button, .extra-buttons button").forEach(btn => btn.classList.remove("active"));
@@ -373,7 +389,7 @@
         alert("Ungültige Anmeldedaten!");
       }
     }
-    // Einstellungen speichern, Wetter und Stock aktualisieren
+    // Einstellungen speichern, Wetter und Aktienkurs aktualisieren
     function saveSettings() {
       const radios = document.getElementsByName("location");
       let selected = "Lübeck";
@@ -493,6 +509,13 @@
         }
       }
       document.getElementById("cookie").addEventListener("click", incrementScore);
+      
+      // Splash Screen: Fade out nach 2 Sekunden
+      setTimeout(() => {
+        const splash = document.getElementById("splash");
+        splash.classList.add("fade-out");
+        setTimeout(() => { splash.remove(); }, 500);
+      }, 2000);
     });
     
     // Dummy-Funktionen (werden in chat.js überschrieben)
