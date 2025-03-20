@@ -29,13 +29,13 @@
       transform: translate(-50%, -50%);
       transition: transform 1s ease, top 1s ease;
     }
-    /* Das Bild im Splash-Screen gleich groß wie später im .logo */
+    /* Das Logo im Splash-Screen hat dieselben Regeln wie das spätere Logo */
     #splash-logo img {
       width: 100%;
       max-width: 320px;
       height: auto;
     }
-    /* Logo nach oben bewegen (auf top: 44px) */
+    /* Logo nach oben bewegen (auf top: 40px) */
     #splash.move-up #splash-logo {
       top: 40px;
       transform: translate(-50%, 0);
@@ -51,7 +51,6 @@
     :root {
       --background: #1e1e2f;
       --text-color: white;
-      /* Zwischen #32CD32 (LimeGreen) und #2E8B57 (SeaGreen) */
       --button-bg: #30AC45; 
       --button-text: black;
       --input-bg: #2a2a3b;
@@ -61,7 +60,7 @@
     body.light-mode {
       --background: white;
       --text-color: black;
-      --button-bg: #30AC45; /* gleicher Grünton im Hellmodus */
+      --button-bg: #30AC45;
       --button-text: black;
       --input-bg: #f3f3f3;
       --message-user: #e0f7fa;
@@ -83,6 +82,7 @@
       justify-content: center;
       cursor: pointer;
     }
+    /* Hier dieselben Regeln: width: 100%, max-width: 320px, height: auto */
     .logo img {
       width: 100%;
       max-width: 320px;
@@ -118,8 +118,7 @@
     button {
       padding: 12px;
       border: none;
-      /* Weniger runde Ecken (6px) */
-      border-radius: 6px;
+      border-radius: 6px; /* Weniger runde Ecken */
       font-size: 1rem;
       cursor: pointer;
       font-weight: bold;
@@ -183,7 +182,7 @@
       width: 90%;
       padding: 12px;
       border: 2px solid var(--button-bg);
-      border-radius: 6px; /* Ebenfalls 6px */
+      border-radius: 6px;
       font-size: 1rem;
       background: var(--input-bg);
       color: var(--text-color);
@@ -421,7 +420,7 @@
     // Aktualisiere Aktienkurs und Wetterinfo
     async function updateStockDisplay() {
       // Ersetze "YOUR_API_KEY" durch deinen echten AlphaVantage-API-Key
-      const stockUrl = "https://www.alphavantage.co/query?function=GLOBAL_QUOTE&symbol=RVTY&apikey=YSKN4T79LY2HR1GA";
+      const stockUrl = "https://www.alphavantage.co/query?function=GLOBAL_QUOTE&symbol=RVTY&apikey=YOUR_API_KEY";
       let priceText = "";
       try {
         const res = await fetch(stockUrl);
