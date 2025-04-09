@@ -6,7 +6,6 @@ export default async function handler(req, res) {
   try {
     const { model, messages } = req.body;
 
-    // Direkter Aufruf der API mit vollständigem Nachrichtenverlauf
     const apiResponse = await fetch("https://api.openai.com/v1/chat/completions", {
       method: "POST",
       headers: {
@@ -28,7 +27,7 @@ export default async function handler(req, res) {
     const data = await apiResponse.json();
 
     if (data.choices && data.choices.length > 0) {
-      return res.status(200).json(data);
+      return res.status(200).json(data); // <-- gibt das ganze GPT-Antwortobjekt zurück
     } else {
       return res.status(500).json({ error: "Keine Antwort von der ChatGPT API erhalten." });
     }
